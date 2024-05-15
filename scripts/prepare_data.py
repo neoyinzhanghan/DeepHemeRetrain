@@ -104,7 +104,7 @@ for data_dir in data_dirs:
         # if the name of the subdir contains the word "cell detection error", it goes into U1
         elif "cell detection error" in subdir.lower():
             cellname = "U1"
-        elif "others" in subdir.lower():
+        elif "others" in subdir.lower() or "other" in subdir.lower():
             continue
         else:
             cellname = subdir
