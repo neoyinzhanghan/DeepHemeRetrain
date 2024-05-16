@@ -42,7 +42,6 @@ cellnames = [
     "PL2",
     "PL3",
     "U1",
-    "U2",
     "U4",
 ]
 
@@ -108,6 +107,8 @@ for data_dir in data_dirs:
         elif "cell detection error" in subdir.lower():
             cellname = "U1"
         elif "others" in subdir.lower() or "other" in subdir.lower():
+            continue
+        elif "U2" in subdir:
             continue
         else:
             cellname = subdir
