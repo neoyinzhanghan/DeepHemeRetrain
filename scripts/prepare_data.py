@@ -3,6 +3,7 @@ import shutil
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
+from PIL import Image
 
 data_dirs = [
     "/media/ssd2/dh_labelled_data/DeepHeme1/UCSF_repo",
@@ -15,6 +16,7 @@ data_dirs = [
     "/media/hdd3/neo/LabelledBMASkippocytes",
     "/media/hdd1/neo/blasts_normal_confirmed",
 ]
+
 save_dir = "/media/hdd3/neo/pooled_deepheme_data"
 
 cellnames = [
@@ -110,17 +112,17 @@ for data_dir in data_dirs:
             cellname = subdir
 
         # get a list of all jpg files in the subdir
-        jpg_files = [
+        img_files = [
             f
             for f in os.listdir(os.path.join(data_dir, subdir))
-            if f.lower().endswith(".jpg")
+            if f.lower().endswith(".jpg") or f.lower().endswith(".png")
         ]
 
         # if there are no jpg files, skip
-        if len(jpg_files) == 0:
+        if len(img_files) == 0:
             continue
 
-        for i, jpg_file in tqdm(enumerate(jpg_files), desc="Copying Images"):
+        for i, jpg_file in tqdm(enumerate(img_files), desc="Copying Images"):
             # randomly assign the image to train, val or test using random numbers
             rand = np.random.rand()
             if rand < 0.7:
@@ -130,10 +132,13 @@ for data_dir in data_dirs:
             else:
                 split = "test"
 
-            # copy the image to the correct directory with name current_idx.jpg, and update metadata
-            shutil.copy(
-                os.path.join(data_dir, subdir, jpg_file),
-                os.path.join(save_dir, split, cellname, f"{current_idx}.jpg"),
+            # open the image using PIL, if the image is RGBA conver to RGB and then save a jpg file
+
+            image_pil = Image.open(os.path.join(data_dir, subdir, jpg_file))
+            if image_pil.mode == "RGBA":
+                image_pil = image_pil.convert("RGB")
+            image_pil.save(
+                os.path.join(save_dir, split, cellname, f"{current_idx}.jpg")
             )
 
             metadata["idx"].append(current_idx)
