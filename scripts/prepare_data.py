@@ -110,6 +110,8 @@ for data_dir in data_dirs:
             continue
         elif "U2" in subdir:
             continue
+        elif "MO3" in subdir:
+            continue
         else:
             cellname = subdir
 
