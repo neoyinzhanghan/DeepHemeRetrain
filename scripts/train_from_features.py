@@ -17,7 +17,7 @@ data_dir = "/media/hdd1/neo/pooled_deepheme_data_SimCLR"
 num_gpus = 3
 num_workers = 20
 num_classes = 23
-batch_size = 64
+batch_size = 16
 
 ############################################################################
 ####### DATASET AND DATA MODULE ############################################
