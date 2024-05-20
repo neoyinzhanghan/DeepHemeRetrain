@@ -76,9 +76,10 @@ class TensorDataset(Dataset):
 
     def __getitem__(self, idx):
         tensor = torch.load(self.data_files[idx])
+        tensor = tensor.cpu()  # Make sure tensors are on CPU when returned
         label = self.labels[idx]
-        tensor = tensor.squeeze()  # Ensure tensor is the correct shape for the model
         return tensor, label
+
 
 
 class TensorDataModule(pl.LightningDataModule):
