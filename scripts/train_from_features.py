@@ -43,23 +43,31 @@ def find_empty_directories(directory):
 class TensorDataset(Dataset):
     def __init__(self, data_dir):
         super().__init__()
-        self.data_files = [
-            os.path.join(data_dir, file)
-            for file in os.listdir(data_dir)
-            if file.endswith(".pt")
-        ]
-        self.labels = [
-            (
-                int(file.split("_")[-1].split(".")[0])
-                if file.split("_")[-1].split(".")[0].isdigit()
-                else -1
-            )
-            for file in self.data_files  # This should reference self.data_files, not os.listdir(data_dir)
-        ]
+        self.data_files = []
+        self.labels = []
+
+        # Iterate over each label directory in the data directory
+        label_dirs = [d for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d))]
+        
+        # Assign numeric labels based on directory names
+        label_map = {name: idx for idx, name in enumerate(sorted(label_dirs))}
+        
+        # Print label map for verification
+        print("Label assignments:", label_map)
+        
+        for label_dir in label_dirs:
+            dir_path = os.path.join(data_dir, label_dir)
+            files = [
+                os.path.join(dir_path, file)
+                for file in os.listdir(dir_path)
+                if file.endswith('.pt')
+            ]
+            self.data_files.extend(files)
+            self.labels.extend([label_map[label_dir]] * len(files))
 
         # Debug prints to verify files and labels
-        print("Data files found:", self.data_files)
-        print("Labels extracted:", self.labels)
+        print("Total number of data files:", len(self.data_files))
+        print("Total number of labels:", len(self.labels))
 
     def __len__(self):
         return len(self.data_files)
@@ -69,7 +77,6 @@ class TensorDataset(Dataset):
         label = self.labels[idx]
         tensor = tensor.squeeze()  # Ensure tensor is the correct shape for the model
         return tensor, label
-
 
 class TensorDataModule(pl.LightningDataModule):
     def __init__(self, data_dir, batch_size):
