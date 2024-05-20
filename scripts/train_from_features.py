@@ -95,8 +95,8 @@ class TensorDataModule(pl.LightningDataModule):
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=num_workers,
+            pin_memory=True,  # Recommended if using GPUs
         )
-
     def val_dataloader(self):
         return DataLoader(
             self.val_dataset,
