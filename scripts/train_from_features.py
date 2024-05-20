@@ -32,8 +32,14 @@ class TensorDataset(Dataset):
             for file in os.listdir(data_dir)
             if file.endswith(".pt")
         ]
+        # Safer label extraction
         self.labels = [
-            int(file.split("_")[-1].split(".")[0]) for file in os.listdir(data_dir)
+            (
+                int(file.split("_")[-1].split(".")[0])
+                if file.split("_")[-1].split(".")[0].isdigit()
+                else -1
+            )
+            for file in os.listdir(data_dir)
         ]
 
     def __len__(self):
@@ -42,6 +48,9 @@ class TensorDataset(Dataset):
     def __getitem__(self, idx):
         tensor = torch.load(self.data_files[idx])
         label = self.labels[idx]
+        tensor = (
+            tensor.squeeze()
+        )  # Make sure the tensor is the correct shape for the model
         return tensor, label
 
 
@@ -92,15 +101,8 @@ class FFNModel(pl.LightningModule):
         self.model = nn.Sequential(
             nn.Linear(2048, 512), nn.ReLU(), nn.Linear(512, num_classes)
         )
-        assert num_classes >= 2
-
-        if num_classes == 2:
-            task = "binary"
-        elif num_classes > 2:
-            task = "multiclass"
-
-        task = "multiclass"
-
+        # Simplified task determination
+        task = "binary" if num_classes == 2 else "multiclass"
         self.train_accuracy = Accuracy(task=task, num_classes=num_classes)
         self.val_accuracy = Accuracy(task=task, num_classes=num_classes)
         self.train_auroc = AUROC(num_classes=num_classes, task=task)
