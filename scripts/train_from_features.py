@@ -12,12 +12,12 @@ import torch.nn.functional as F
 ############################################################################
 
 default_config = {"lr": 3.56e-07}
-num_epochs = 500
+num_epochs = 50
 data_dir = "/media/hdd1/neo/pooled_deepheme_data_SimCLR"
 num_gpus = 3
 num_workers = 20
 num_classes = 23
-batch_size = 256
+batch_size = 64
 
 ############################################################################
 ####### DATASET AND DATA MODULE ############################################
@@ -47,20 +47,22 @@ class TensorDataset(Dataset):
         self.labels = []
 
         # Iterate over each label directory in the data directory
-        label_dirs = [d for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d))]
-        
+        label_dirs = [
+            d for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d))
+        ]
+
         # Assign numeric labels based on directory names
         label_map = {name: idx for idx, name in enumerate(sorted(label_dirs))}
-        
+
         # Print label map for verification
         print("Label assignments:", label_map)
-        
+
         for label_dir in label_dirs:
             dir_path = os.path.join(data_dir, label_dir)
             files = [
                 os.path.join(dir_path, file)
                 for file in os.listdir(dir_path)
-                if file.endswith('.pt')
+                if file.endswith(".pt")
             ]
             self.data_files.extend(files)
             self.labels.extend([label_map[label_dir]] * len(files))
@@ -77,6 +79,7 @@ class TensorDataset(Dataset):
         label = self.labels[idx]
         tensor = tensor.squeeze()  # Ensure tensor is the correct shape for the model
         return tensor, label
+
 
 class TensorDataModule(pl.LightningDataModule):
     def __init__(self, data_dir, batch_size):
@@ -96,6 +99,7 @@ class TensorDataModule(pl.LightningDataModule):
             shuffle=True,
             num_workers=num_workers,
         )
+
     def val_dataloader(self):
         return DataLoader(
             self.val_dataset,
@@ -184,7 +188,7 @@ if __name__ == "__main__":
 
     assert not empty_dirs, f"Empty directories found: {empty_dirs}"
 
-    torch.multiprocessing.set_start_method('spawn', force=True)
+    torch.multiprocessing.set_start_method("spawn", force=True)
     # rest of your script (e.g., training loop, DataLoader initialization)
 
     train_model(batch_size=batch_size)
