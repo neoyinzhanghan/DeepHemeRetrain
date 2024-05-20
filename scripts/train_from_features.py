@@ -185,4 +185,7 @@ if __name__ == "__main__":
 
     assert not empty_dirs, f"Empty directories found: {empty_dirs}"
 
+    torch.multiprocessing.set_start_method('spawn', force=True)
+    # rest of your script (e.g., training loop, DataLoader initialization)
+
     train_model(batch_size=batch_size)
