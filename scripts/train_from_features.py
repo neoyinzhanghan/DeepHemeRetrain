@@ -77,15 +77,15 @@ class TensorDataset(Dataset):
     def __getitem__(self, idx):
         tensor = torch.load(self.data_files[idx])
 
-        #print which device tensor is on
+        # print which device tensor is on
         print(tensor.device)
 
         import sys
+
         sys.exit()
         tensor = tensor.cpu()  # Make sure tensors are on CPU when returned
         label = self.labels[idx]
         return tensor, label
-
 
 
 class TensorDataModule(pl.LightningDataModule):
@@ -194,5 +194,8 @@ if __name__ == "__main__":
     empty_dirs = find_empty_directories(data_dir)
 
     assert not empty_dirs, f"Empty directories found: {empty_dirs}"
+
+    # set to spawn to avoid issues with CUDA memory
+    torch.multiprocessing.set_start_method("spawn")
 
     train_model(batch_size=batch_size)
