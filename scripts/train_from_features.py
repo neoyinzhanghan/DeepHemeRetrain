@@ -24,6 +24,22 @@ batch_size = 256
 ############################################################################
 
 
+def find_empty_directories(directory):
+    """
+    Recursively find and print all empty directories within a given directory.
+
+    Args:
+    directory (str): The path to the directory to start the search from.
+    """
+    empty_dirs = []
+    for root, dirs, files in os.walk(directory, topdown=False):
+        # Check if the directory is empty
+        if not os.listdir(root):
+            empty_dirs.append(root)
+
+    return empty_dirs
+
+
 class TensorDataset(Dataset):
     def __init__(self, data_dir):
         super().__init__()
@@ -156,4 +172,9 @@ def train_model(batch_size):
 
 
 if __name__ == "__main__":
+
+    empty_dirs = find_empty_directories(data_dir)
+
+    assert not empty_dirs, f"Empty directories found: {empty_dirs}"
+    
     train_model(batch_size=batch_size)
