@@ -48,15 +48,18 @@ class TensorDataset(Dataset):
             for file in os.listdir(data_dir)
             if file.endswith(".pt")
         ]
-        # Safer label extraction
         self.labels = [
             (
                 int(file.split("_")[-1].split(".")[0])
                 if file.split("_")[-1].split(".")[0].isdigit()
                 else -1
             )
-            for file in os.listdir(data_dir)
+            for file in self.data_files  # This should reference self.data_files, not os.listdir(data_dir)
         ]
+
+        # Debug prints to verify files and labels
+        print("Data files found:", self.data_files)
+        print("Labels extracted:", self.labels)
 
     def __len__(self):
         return len(self.data_files)
@@ -64,9 +67,7 @@ class TensorDataset(Dataset):
     def __getitem__(self, idx):
         tensor = torch.load(self.data_files[idx])
         label = self.labels[idx]
-        tensor = (
-            tensor.squeeze()
-        )  # Make sure the tensor is the correct shape for the model
+        tensor = tensor.squeeze()  # Ensure tensor is the correct shape for the model
         return tensor, label
 
 
@@ -176,5 +177,5 @@ if __name__ == "__main__":
     empty_dirs = find_empty_directories(data_dir)
 
     assert not empty_dirs, f"Empty directories found: {empty_dirs}"
-    
+
     train_model(batch_size=batch_size)
