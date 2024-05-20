@@ -79,10 +79,6 @@ class TensorDataset(Dataset):
 
         # print which device tensor is on
         print(tensor.device)
-
-        import sys
-
-        sys.exit()
         tensor = tensor.cpu()  # Make sure tensors are on CPU when returned
         label = self.labels[idx]
         return tensor, label
