@@ -75,11 +75,7 @@ class TensorDataset(Dataset):
         return len(self.data_files)
 
     def __getitem__(self, idx):
-        tensor = torch.load(self.data_files[idx])
-
-        # print which device tensor is on
-        print(tensor.device)
-        tensor = tensor.cpu()  # Make sure tensors are on CPU when returned
+        tensor = torch.load(self.data_files[idx], map_location="cpu")
         label = self.labels[idx]
         return tensor, label
 
