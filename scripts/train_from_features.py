@@ -92,10 +92,19 @@ class FFNModel(pl.LightningModule):
         self.model = nn.Sequential(
             nn.Linear(2048, 512), nn.ReLU(), nn.Linear(512, num_classes)
         )
-        self.train_accuracy = Accuracy(num_classes=num_classes, average="macro")
-        self.val_accuracy = Accuracy(num_classes=num_classes, average="macro")
-        self.train_auroc = AUROC(num_classes=num_classes, average="macro")
-        self.val_auroc = AUROC(num_classes=num_classes, average="macro")
+        assert num_classes >= 2
+
+        if num_classes == 2:
+            task = "binary"
+        elif num_classes > 2:
+            task = "multiclass"
+
+        task = "multiclass"
+
+        self.train_accuracy = Accuracy(task=task, num_classes=num_classes)
+        self.val_accuracy = Accuracy(task=task, num_classes=num_classes)
+        self.train_auroc = AUROC(num_classes=num_classes, task=task)
+        self.val_auroc = AUROC(num_classes=num_classes, task=task)
         self.config = config
 
     def forward(self, x):
