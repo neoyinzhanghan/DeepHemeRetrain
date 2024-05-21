@@ -12,6 +12,7 @@ from torch import nn
 from pytorch_lightning.loggers import TensorBoardLogger
 from torchvision import transforms, datasets, models
 from torchmetrics import Accuracy, AUROC
+from torch.utils.data import WeightedRandomSampler
 
 
 ############################################################################
@@ -81,10 +82,7 @@ class DownsampledDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         image, label = self.dataset[idx]
         if self.downsample_factor > 1:
-            size = (
-                img_size // self.downsample_factor,
-                img_size // self.downsample_factor,
-            )
+            size = (96 // self.downsample_factor, 96 // self.downsample_factor)
             image = transforms.functional.resize(image, size)
 
         # Convert image to RGB if not already
@@ -95,7 +93,7 @@ class DownsampledDataset(torch.utils.data.Dataset):
         if self.apply_augmentation:
             # Apply augmentation
             image = get_feat_extract_augmentation_pipeline(
-                image_size=img_size // self.downsample_factor
+                image_size=96 // self.downsample_factor
             )(image=np.array(image))["image"]
 
         image = to_tensor(image)
@@ -103,7 +101,6 @@ class DownsampledDataset(torch.utils.data.Dataset):
         return image, label
 
 
-# Data Module
 class ImageDataModule(pl.LightningDataModule):
     def __init__(self, data_dir, batch_size, downsample_factor):
         super().__init__()
@@ -113,6 +110,7 @@ class ImageDataModule(pl.LightningDataModule):
         self.transform = transforms.Compose(
             [
                 transforms.ToTensor(),
+                # Additional normalization can be uncommented and adjusted if needed
                 # transforms.Normalize(mean=(0.61070228, 0.54225375, 0.65411311), std=(0.1485182, 0.1786308, 0.12817113))
             ]
         )
@@ -120,18 +118,16 @@ class ImageDataModule(pl.LightningDataModule):
     def setup(self, stage=None):
         # Load train, validation and test datasets
         train_dataset = datasets.ImageFolder(
-            root=os.path.join(self.data_dir, "train"),
-            transform=self.transform,
+            root=os.path.join(self.data_dir, "train"), transform=self.transform
         )
         val_dataset = datasets.ImageFolder(
-            root=os.path.join(self.data_dir, "val"),
-            transform=self.transform,
+            root=os.path.join(self.data_dir, "val"), transform=self.transform
         )
         test_dataset = datasets.ImageFolder(
-            root=os.path.join(self.data_dir, "test"),
-            transform=self.transform,
+            root=os.path.join(self.data_dir, "test"), transform=self.transform
         )
 
+        # Prepare the train dataset with downsampling and augmentation
         self.train_dataset = DownsampledDataset(
             train_dataset, self.downsample_factor, apply_augmentation=True
         )
@@ -142,28 +138,31 @@ class ImageDataModule(pl.LightningDataModule):
             test_dataset, self.downsample_factor, apply_augmentation=False
         )
 
+        # Compute class weights for handling imbalance
+        class_counts = torch.tensor([t[1] for t in train_dataset.samples]).bincount()
+        class_weights = 1.0 / class_counts.float()
+        sample_weights = class_weights[[t[1] for t in train_dataset.samples]]
+
+        self.train_sampler = WeightedRandomSampler(
+            weights=sample_weights, num_samples=len(sample_weights), replacement=True
+        )
+
     def train_dataloader(self):
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
-            shuffle=True,
-            num_workers=num_workers,
+            sampler=self.train_sampler,
+            num_workers=20,
         )
 
     def val_dataloader(self):
         return DataLoader(
-            self.val_dataset,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=num_workers,
+            self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=20
         )
 
     def test_dataloader(self):
         return DataLoader(
-            self.test_dataset,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=num_workers,
+            self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=20
         )
 
 
