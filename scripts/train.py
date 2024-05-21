@@ -26,6 +26,7 @@ num_workers = 20
 downsample_factor = 1
 batch_size = 256
 img_size = 96
+num_classes = 23
 
 ############################################################################
 ####### FUNCTIONS FOR DATA AUGMENTATION AND DATA LOADING ###################
@@ -168,7 +169,7 @@ class ImageDataModule(pl.LightningDataModule):
 
 # Model Module
 class ResNetModel(pl.LightningModule):
-    def __init__(self, num_classes=2, config=default_config):
+    def __init__(self, num_classes=num_classes, config=default_config):
         super().__init__()
         self.model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
@@ -237,7 +238,7 @@ def train_model(downsample_factor):
         batch_size=batch_size,
         downsample_factor=downsample_factor,
     )
-    model = ResNetModel(num_classes=2)
+    model = ResNetModel(num_classes=num_classes)
 
     # Logger
     logger = TensorBoardLogger("lightning_logs", name=str(downsample_factor))
