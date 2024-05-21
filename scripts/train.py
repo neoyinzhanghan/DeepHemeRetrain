@@ -167,30 +167,34 @@ class ImageDataModule(pl.LightningDataModule):
 
 
 # Model Module
-class ResNetModel(pl.LightningModule):
-    def __init__(self, num_classes=num_classes, config=default_config):
-        super().__init__()
-        self.model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
-        self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
-
-        assert num_classes >= 2
+class Myresnext50(pl.LightningModule):
+    def __init__(self, my_pretrained_model, num_classes=23, config=default_config):
+        super(Myresnext50, self).__init__()
+        self.pretrained = my_pretrained_model
+        self.my_new_layers = nn.Sequential(
+            nn.Linear(
+                1000, 100
+            ),  # Assuming the output of your pre-trained model is 1000
+            nn.ReLU(),
+            nn.Linear(100, num_classes),
+        )
+        self.num_classes = num_classes
 
         if num_classes == 2:
             task = "binary"
         elif num_classes > 2:
             task = "multiclass"
-
-        task = "multiclass"
-
-        self.train_accuracy = Accuracy(task=task, num_classes=num_classes)
-        self.val_accuracy = Accuracy(task=task, num_classes=num_classes)
+        self.train_accuracy = Accuracy(num_classes=num_classes, task=task)
+        self.val_accuracy = Accuracy(num_classes=num_classes, task=task)
         self.train_auroc = AUROC(num_classes=num_classes, task=task)
         self.val_auroc = AUROC(num_classes=num_classes, task=task)
 
         self.config = config
 
     def forward(self, x):
-        return self.model(x)
+        x = self.pretrained(x)
+        x = self.my_new_layers(x)
+        return torch.sigmoid(x.reshape(x.shape[0], 1, self.num_classes))
 
     def training_step(self, batch, batch_idx):
         x, y = batch
@@ -204,12 +208,10 @@ class ResNetModel(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config["lr"])
-
-        # T_max is the number of steps until the first restart (here, set to total training epochs).
-        # eta_min is the minimum learning rate. Adjust these parameters as needed.
-        scheduler = CosineAnnealingLR(optimizer, T_max=num_epochs, eta_min=0)
-
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.config["lr"])
+        scheduler = CosineAnnealingLR(
+            optimizer, T_max=self.config["num_epochs"], eta_min=0
+        )
         return {"optimizer": optimizer, "lr_scheduler": scheduler}
 
     def validation_step(self, batch, batch_idx):
@@ -224,8 +226,6 @@ class ResNetModel(pl.LightningModule):
     def on_validation_epoch_end(self):
         self.log("val_acc_epoch", self.val_accuracy.compute())
         self.log("val_auroc_epoch", self.val_auroc.compute())
-        # Handle or reset saved outputs as needed
-
         current_lr = self.trainer.optimizers[0].param_groups[0]["lr"]
         self.log("learning_rate", current_lr, on_epoch=True)
 
@@ -237,7 +237,7 @@ def train_model(downsample_factor):
         batch_size=batch_size,
         downsample_factor=downsample_factor,
     )
-    model = ResNetModel(num_classes=num_classes)
+    model = Myresnext50(num_classes=num_classes)
 
     # Logger
     logger = TensorBoardLogger("lightning_logs", name=str(downsample_factor))
