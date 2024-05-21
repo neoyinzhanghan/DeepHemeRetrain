@@ -231,13 +231,15 @@ class Myresnext50(pl.LightningModule):
 
 
 # Main training loop
-def train_model(downsample_factor):
+def train_model(downsample_factor, my_pretrained_model):
     data_module = ImageDataModule(
         data_dir=data_dir,
         batch_size=batch_size,
         downsample_factor=downsample_factor,
     )
-    model = Myresnext50(num_classes=num_classes)
+    model = Myresnext50(
+        num_classes=num_classes, my_pretrained_model=my_pretrained_model
+    )
 
     # Logger
     logger = TensorBoardLogger("lightning_logs", name=str(downsample_factor))
@@ -254,4 +256,11 @@ def train_model(downsample_factor):
 
 if __name__ == "__main__":
     # Run training for each downsampling factor
-    train_model(downsample_factor=downsample_factor)
+
+    # Load the pretrained model
+    my_pretrained_model = models.resnext50_32x4d(pretrained=True)
+
+    # Train the model
+    train_model(
+        downsample_factor=downsample_factor, my_pretrained_model=my_pretrained_model
+    )
