@@ -27,7 +27,7 @@ num_workers = 20
 downsample_factor = 1
 batch_size = 256
 img_size = 96
-num_classes = 2
+num_classes = 23
 
 ############################################################################
 ####### FUNCTIONS FOR DATA AUGMENTATION AND DATA LOADING ###################
