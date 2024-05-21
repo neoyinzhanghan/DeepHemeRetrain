@@ -19,7 +19,7 @@ from torch.utils.data import WeightedRandomSampler
 ####### DEFINE HYPERPARAMETERS AND DATA DIRECTORIES ########################
 ############################################################################
 
-num_epochs = 500
+num_epochs = 50
 default_config = {"lr": 3.56e-07}  # 1.462801279401232e-06}
 data_dir = "/media/hdd1/neo/pooled_deepheme_data"
 num_gpus = 3
@@ -27,7 +27,7 @@ num_workers = 20
 downsample_factor = 1
 batch_size = 256
 img_size = 96
-num_classes = 23
+num_classes = 2
 
 ############################################################################
 ####### FUNCTIONS FOR DATA AUGMENTATION AND DATA LOADING ###################
@@ -54,9 +54,7 @@ def get_feat_extract_augmentation_pipeline(image_size):
     )
     transform_color = A.Compose(
         [
-            A.RandomBrightnessContrast(
-                contrast_limit=0.4, brightness_limit=0.4, p=0.5
-            ),
+            A.RandomBrightnessContrast(contrast_limit=0.4, brightness_limit=0.4, p=0.5),
             A.CLAHE(p=0.3),
             A.ColorJitter(p=0.2),
             A.RandomGamma(p=0.2),
@@ -139,20 +137,40 @@ class ImageDataModule(pl.LightningDataModule):
         )
 
         # Compute class weights for handling imbalance
-        class_counts = torch.tensor([t[1] for t in train_dataset.samples]).bincount()
-        class_weights = 1.0 / class_counts.float()
-        sample_weights = class_weights[[t[1] for t in train_dataset.samples]]
+        class_counts_train = torch.tensor(
+            [t[1] for t in train_dataset.samples]
+        ).bincount()
+        class_weights_train = 1.0 / class_counts_train.float()
+        sample_weights_train = class_weights_train[
+            [t[1] for t in train_dataset.samples]
+        ]
+
+        class_counts_val = torch.tensor([t[1] for t in val_dataset.samples]).bincount()
+        class_weights_val = 1.0 / class_counts_val.float()
+        sample_weights_val = class_weights_val[[t[1] for t in val_dataset.samples]]
+
+        class_counts_test = torch.tensor(
+            [t[1] for t in test_dataset.samples]
+        ).bincount()
+        class_weights_test = 1.0 / class_counts_test.float()
+        sample_weights_test = class_weights_test[[t[1] for t in test_dataset.samples]]
 
         self.train_sampler = WeightedRandomSampler(
-            weights=sample_weights, num_samples=len(sample_weights), replacement=True
+            weights=sample_weights_train,
+            num_samples=len(sample_weights_train),
+            replacement=True,
         )
 
         self.val_sampler = WeightedRandomSampler(
-            weights=sample_weights, num_samples=len(sample_weights), replacement=True
+            weights=sample_weights_val,
+            num_samples=len(sample_weights_val),
+            replacement=True,
         )
 
         self.test_sampler = WeightedRandomSampler(
-            weights=sample_weights, num_samples=len(sample_weights), replacement=True
+            weights=sample_weights_test,
+            num_samples=len(sample_weights_test),
+            replacement=True,
         )
 
     def train_dataloader(self):
@@ -194,14 +212,14 @@ class Myresnext50(pl.LightningModule):
         )
         self.num_classes = num_classes
 
-        if num_classes == 2:
-            task = "binary"
-        elif num_classes > 2:
-            task = "multiclass"
-        self.train_accuracy = Accuracy(num_classes=num_classes, task=task)
-        self.val_accuracy = Accuracy(num_classes=num_classes, task=task)
+        task = "multiclass"
+
+        self.train_accuracy = Accuracy(task=task, num_classes=num_classes)
+        self.val_accuracy = Accuracy(task=task, num_classes=num_classes)
         self.train_auroc = AUROC(num_classes=num_classes, task=task)
         self.val_auroc = AUROC(num_classes=num_classes, task=task)
+        self.test_accuracy = Accuracy(num_classes=num_classes, task=task)
+        self.test_auroc = AUROC(num_classes=num_classes, task=task)
 
         self.config = config
 
@@ -242,6 +260,22 @@ class Myresnext50(pl.LightningModule):
         current_lr = self.trainer.optimizers[0].param_groups[0]["lr"]
         self.log("learning_rate", current_lr, on_epoch=True)
 
+    def test_step(self, batch, batch_idx):
+        x, y = batch
+        y_hat = self.forward(x)
+        loss = F.cross_entropy(y_hat, y)
+        self.log("test_loss", loss, on_step=False, on_epoch=True)
+        self.test_accuracy(y_hat, y)
+        self.test_auroc(y_hat, y)
+        return loss
+
+    def on_test_epoch_end(self):
+        self.log("test_acc_epoch", self.test_accuracy.compute())
+        self.log("test_auroc_epoch", self.test_auroc.compute())
+        # Handle or reset saved outputs as needed
+        current_lr = self.trainer.optimizers[0].param_groups[0]["lr"]
+        self.log("learning_rate", current_lr, on_epoch=True)
+
 
 # Main training loop
 def train_model(downsample_factor, my_pretrained_model):
@@ -265,6 +299,7 @@ def train_model(downsample_factor, my_pretrained_model):
         accelerator="gpu",  # 'ddp' for DistributedDataParallel
     )
     trainer.fit(model, data_module)
+    trainer.test(model, data_module.test_dataloader())
 
 
 if __name__ == "__main__":
