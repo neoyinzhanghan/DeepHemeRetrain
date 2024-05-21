@@ -194,7 +194,8 @@ class Myresnext50(pl.LightningModule):
     def forward(self, x):
         x = self.pretrained(x)
         x = self.my_new_layers(x)
-        return torch.sigmoid(x.reshape(x.shape[0], 1, self.num_classes))
+
+        return x
 
     def training_step(self, batch, batch_idx):
         x, y = batch
