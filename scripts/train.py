@@ -37,7 +37,7 @@ num_classes = 23
 def get_feat_extract_augmentation_pipeline(image_size):
     """Returns a randomly chosen augmentation pipeline for SSL."""
 
-    ## Simple augumentation to improtve the data generalibility
+    ## Simple augumentation to improve the data generalizability
     transform_shape = A.Compose(
         [
             A.ShiftScaleRotate(p=0.8),
@@ -55,7 +55,7 @@ def get_feat_extract_augmentation_pipeline(image_size):
     transform_color = A.Compose(
         [
             A.RandomBrightnessContrast(
-                contrast_limit=0.4, brightness_by_max=0.4, p=0.5
+                contrast_limit=0.4, brightness_limit=0.4, p=0.5
             ),
             A.CLAHE(p=0.3),
             A.ColorJitter(p=0.2),
@@ -63,7 +63,7 @@ def get_feat_extract_augmentation_pipeline(image_size):
         ]
     )
 
-    # compose the two augmentation pipelines
+    # Compose the two augmentation pipelines
     return A.Compose(
         [A.Resize(image_size, image_size), A.OneOf([transform_shape, transform_color])]
     )
@@ -147,6 +147,14 @@ class ImageDataModule(pl.LightningDataModule):
             weights=sample_weights, num_samples=len(sample_weights), replacement=True
         )
 
+        self.val_sampler = WeightedRandomSampler(
+            weights=sample_weights, num_samples=len(sample_weights), replacement=True
+        )
+
+        self.test_sampler = WeightedRandomSampler(
+            weights=sample_weights, num_samples=len(sample_weights), replacement=True
+        )
+
     def train_dataloader(self):
         return DataLoader(
             self.train_dataset,
@@ -157,12 +165,18 @@ class ImageDataModule(pl.LightningDataModule):
 
     def val_dataloader(self):
         return DataLoader(
-            self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=20
+            self.val_dataset,
+            batch_size=self.batch_size,
+            sampler=self.val_sampler,
+            num_workers=20,
         )
 
     def test_dataloader(self):
         return DataLoader(
-            self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=20
+            self.test_dataset,
+            batch_size=self.batch_size,
+            sampler=self.test_sampler,
+            num_workers=20,
         )
 
 
