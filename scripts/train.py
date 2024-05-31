@@ -226,7 +226,6 @@ class Myresnext50(pl.LightningModule):
 
     def forward(self, x):
         x = self.pretrained(x)
-        x = self.my_new_layers(x)
 
         return x
 
