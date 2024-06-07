@@ -278,14 +278,14 @@ class Myresnext50(pl.LightningModule):
 
 
 # Main training loop
-def train_model(downsample_factor, my_pretrained_model):
+def train_model(downsample_factor):
     data_module = ImageDataModule(
         data_dir=data_dir,
         batch_size=batch_size,
         downsample_factor=downsample_factor,
     )
     model = Myresnext50(
-        num_classes=num_classes, my_pretrained_model=my_pretrained_model
+        num_classes=num_classes
     )
 
     # Logger
