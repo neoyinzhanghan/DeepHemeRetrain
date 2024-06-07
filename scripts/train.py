@@ -200,9 +200,11 @@ class ImageDataModule(pl.LightningDataModule):
 
 # Model Module
 class Myresnext50(pl.LightningModule):
-    def __init__(self, my_pretrained_model, num_classes=23, config=default_config):
+    def __init__(self, num_classes=23, config=default_config):
         super(Myresnext50, self).__init__()
-        self.pretrained = my_pretrained_model
+        self.pretrained = torch.hub.load(
+            "pytorch/vision:v0.10.0", "resnext50_32x4d", pretrained=True
+        )
         self.pretrained.fc = nn.Linear(self.pretrained.fc.in_features, num_classes)
         # self.my_new_layers = nn.Sequential(
         #     nn.Linear(
@@ -300,6 +302,25 @@ def train_model(downsample_factor, my_pretrained_model):
     )
     trainer.fit(model, data_module)
     trainer.test(model, data_module.test_dataloader())
+
+
+def model_create(checkpoint_path):
+    """
+    Create a model instance from a given checkpoint.
+
+    Parameters:
+    - checkpoint_path (str): The file path to the PyTorch Lightning checkpoint.
+
+    Returns:
+    - model (Myresnext50): The loaded model ready for inference or further training.
+    """
+    # Instantiate the model with any required configuration
+    model = Myresnext50(num_classes=23)  # Adjust the number of classes if needed
+
+    # Load the model weights from a checkpoint
+    model = model.load_from_checkpoint(checkpoint_path)
+
+    return model
 
 
 if __name__ == "__main__":
