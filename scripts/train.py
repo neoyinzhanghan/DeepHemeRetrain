@@ -202,9 +202,7 @@ class ImageDataModule(pl.LightningDataModule):
 class Myresnext50(pl.LightningModule):
     def __init__(self, num_classes=23, config=default_config):
         super(Myresnext50, self).__init__()
-        self.pretrained = torch.hub.load(
-            "pytorch/vision:v0.10.0", "resnext50_32x4d", pretrained=True
-        )
+        self.pretrained = models.resnext50_32x4d(pretrained=True)
         self.pretrained.fc = nn.Linear(self.pretrained.fc.in_features, num_classes)
         # self.my_new_layers = nn.Sequential(
         #     nn.Linear(
@@ -326,10 +324,5 @@ def model_create(checkpoint_path):
 if __name__ == "__main__":
     # Run training for each downsampling factor
 
-    # Load the pretrained model
-    my_pretrained_model = models.resnext50_32x4d(pretrained=True)
-
     # Train the model
-    train_model(
-        downsample_factor=downsample_factor, my_pretrained_model=my_pretrained_model
-    )
+    train_model(downsample_factor=downsample_factor)
