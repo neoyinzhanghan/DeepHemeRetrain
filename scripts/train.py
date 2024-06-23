@@ -284,9 +284,7 @@ def train_model(downsample_factor):
         batch_size=batch_size,
         downsample_factor=downsample_factor,
     )
-    model = Myresnext50(
-        num_classes=num_classes
-    )
+    model = Myresnext50(num_classes=num_classes)
 
     # Logger
     logger = TensorBoardLogger("lightning_logs", name=str(downsample_factor))
@@ -302,7 +300,7 @@ def train_model(downsample_factor):
     trainer.test(model, data_module.test_dataloader())
 
 
-def model_create(checkpoint_path):
+def model_create(path, num_classes=23):
     """
     Create a model instance from a given checkpoint.
 
@@ -313,13 +311,14 @@ def model_create(checkpoint_path):
     - model (Myresnext50): The loaded model ready for inference or further training.
     """
     # Instantiate the model with any required configuration
-    model = Myresnext50(num_classes=23)  # Adjust the number of classes if needed
+    # model = Myresnext50(
+    #     num_classes=num_classes
+    # )  # Adjust the number of classes if needed
 
-    # Load the model weights from a checkpoint
-    model = model.load_from_checkpoint(checkpoint_path)
+    # # Load the model weights from a checkpoint
+    model = Myresnext50.load_from_checkpoint(path)
 
     return model
-
 
 if __name__ == "__main__":
     # Run training for each downsampling factor
