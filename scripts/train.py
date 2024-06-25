@@ -19,15 +19,15 @@ from torch.utils.data import WeightedRandomSampler
 ####### DEFINE HYPERPARAMETERS AND DATA DIRECTORIES ########################
 ############################################################################
 
-num_epochs = 500
+num_epochs = 50
 default_config = {"lr": 3.56e-06}  # 1.462801279401232e-06}
-data_dir = "/media/hdd1/neo/pooled_deepheme_data"
+data_dir = "/media/hdd1/neo/pooled_deepheme_data_M1_confused"
 num_gpus = 3
 num_workers = 20
 downsample_factor = 1
 batch_size = 256
 img_size = 96
-num_classes = 23
+num_classes = 5
 
 ############################################################################
 ####### FUNCTIONS FOR DATA AUGMENTATION AND DATA LOADING ###################
@@ -200,7 +200,7 @@ class ImageDataModule(pl.LightningDataModule):
 
 # Model Module
 class Myresnext50(pl.LightningModule):
-    def __init__(self, num_classes=23, config=default_config):
+    def __init__(self, num_classes=5, config=default_config):
         super(Myresnext50, self).__init__()
         self.pretrained = models.resnext50_32x4d(pretrained=True)
         self.pretrained.fc = nn.Linear(self.pretrained.fc.in_features, num_classes)
@@ -319,6 +319,7 @@ def model_create(path, num_classes=23):
     model = Myresnext50.load_from_checkpoint(path)
 
     return model
+
 
 if __name__ == "__main__":
     # Run training for each downsampling factor
