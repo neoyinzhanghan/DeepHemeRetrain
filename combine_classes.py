@@ -5,8 +5,8 @@ from tqdm import tqdm
 import pandas as pd
 from pathlib import Path
 
-data_path = "/media/hdd1/neo/pooled_deepheme_data_M1_confused"
-save_dir = "/media/hdd1/neo/pooled_deepheme_data_M1_confused_blast_binary"
+data_path = "/media/hdd1/neo/pooled_deepheme_data"
+save_dir = "/media/hdd1/neo/pooled_deepheme_data_blast_binary"
 metadata_file = os.path.join(save_dir, "metadata.csv")
 
 if not os.path.exists(save_dir):
