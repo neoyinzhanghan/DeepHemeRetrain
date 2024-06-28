@@ -21,7 +21,7 @@ from torch.utils.data import WeightedRandomSampler
 
 num_epochs = 500
 default_config = {"lr": 3.56e-06}  # 1.462801279401232e-06}
-data_dir = "/media/hdd1/neo/pooled_deepheme_data_M1_confused_blast_binary"
+data_dir = "/media/hdd1/neo/pooled_deepheme_data_blast_binary"
 num_gpus = 3
 num_workers = 20
 downsample_factor = 1
