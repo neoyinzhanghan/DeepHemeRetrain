@@ -229,13 +229,13 @@ class Myresnext50(pl.LightningModule):
 
         return x
 
-    def extract_features(self, x):
-        # Extract features before the last fc layer
-        layers = list(self.pretrained.children())[:-1]  # Remove the last fc layer
-        feature_extractor = nn.Sequential(*layers)
-        x = feature_extractor(x)
-        x = nn.Flatten()(x)  # Flatten the output if needed
-        return x
+    # def extract_features(self, x):
+    #     # Extract features before the last fc layer
+    #     layers = list(self.pretrained.children())[:-1]  # Remove the last fc layer
+    #     feature_extractor = nn.Sequential(*layers)
+    #     x = feature_extractor(x)
+    #     x = nn.Flatten()(x)  # Flatten the output if needed
+    #     return x
 
     def training_step(self, batch, batch_idx):
         x, y = batch
@@ -327,7 +327,6 @@ def model_create(path, num_classes=23):
     model = Myresnext50.load_from_checkpoint(path)
 
     return model
-
 
 if __name__ == "__main__":
     # Run training for each downsampling factor
