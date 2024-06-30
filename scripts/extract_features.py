@@ -9,7 +9,7 @@ model_ckpt_path = "/media/hdd1/neo/MODELS/2024-06-11  DeepHemeRetrain non-frog f
 data_dir = "/media/hdd1/neo/pooled_deepheme_data/val"
 save_dir = "/media/hdd1/neo/pooled_deepheme_data_features/val"
 
-model = model_create(Myresnext50, model_ckpt_path)
+model = model_create(model_ckpt_path, num_classes=23)
 
 # use model.extract_features() to extract features (don't forget the batch dimension)
 # save the extracted features to save_dir under the same name and folder structure as data_dir with .npy extension
