@@ -6,8 +6,8 @@ from PIL import Image
 from torchvision import transforms
 
 model_ckpt_path = "/media/hdd1/neo/MODELS/2024-06-11  DeepHemeRetrain non-frog feature deploy/1/version_0/checkpoints/epoch=499-step=27500.ckpt"
-data_dir = "/media/hdd1/neo/pooled_deepheme_data/train"
-save_dir = "/media/hdd1/neo/pooled_deepheme_data_features/train"
+data_dir = "/media/hdd1/neo/pooled_deepheme_data/test"
+save_dir = "/media/hdd1/neo/pooled_deepheme_data_features/test"
 
 model = model_create(model_ckpt_path, num_classes=23)
 
