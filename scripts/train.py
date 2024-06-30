@@ -27,7 +27,7 @@ num_workers = 20
 downsample_factor = 1
 batch_size = 256
 img_size = 96
-num_classes = 2
+num_classes = 23
 
 ############################################################################
 ####### FUNCTIONS FOR DATA AUGMENTATION AND DATA LOADING ###################
@@ -200,7 +200,7 @@ class ImageDataModule(pl.LightningDataModule):
 
 # Model Module
 class Myresnext50(pl.LightningModule):
-    def __init__(self, num_classes=2, config=default_config):
+    def __init__(self, num_classes=23, config=default_config):
         super(Myresnext50, self).__init__()
         self.pretrained = models.resnext50_32x4d(pretrained=True)
         self.pretrained.fc = nn.Linear(self.pretrained.fc.in_features, num_classes)
@@ -227,6 +227,14 @@ class Myresnext50(pl.LightningModule):
     def forward(self, x):
         x = self.pretrained(x)
 
+        return x
+
+    def extract_features(self, x):
+        # Extract features before the last fc layer
+        layers = list(self.pretrained.children())[:-1]  # Remove the last fc layer
+        feature_extractor = nn.Sequential(*layers)
+        x = feature_extractor(x)
+        x = nn.Flatten()(x)  # Flatten the output if needed
         return x
 
     def training_step(self, batch, batch_idx):
@@ -300,7 +308,7 @@ def train_model(downsample_factor):
     trainer.test(model, data_module.test_dataloader())
 
 
-def model_create(path, num_classes=2):
+def model_create(path, num_classes=23):
     """
     Create a model instance from a given checkpoint.
 
