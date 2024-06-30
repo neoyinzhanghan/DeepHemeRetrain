@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from scripts.train import Myresnext50, model_create
+from train import Myresnext50, model_create
 from tqdm import tqdm
 from PIL import Image
 from torchvision import transforms
