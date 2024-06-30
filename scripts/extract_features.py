@@ -27,6 +27,9 @@ for root, dirs, files in os.walk(data_dir):
             # add batch dimension
             img = img.unsqueeze(0)
 
+            # move img to cuda
+            img = img.cuda()
+
             # extract features
             features = model.extract_features(img)
 
@@ -36,9 +39,18 @@ for root, dirs, files in os.walk(data_dir):
                 2048,
             ), f"features shape is {features.shape} instead of (2048,)"
 
-            # save features
-            save_path = os.path.join(save_dir, root[len(data_dir) :], file)
+            # move the feature back to cpu and convert to numpy
+            features = features.cpu().detach().numpy()
 
+            # get the save_path which is same folder structure and file name but with .npy extension
+            save_path = os.path.join(
+                save_dir, root[len(data_dir) + 1 :], file[:-4] + ".npy"
+            )
+
+            # create the directory if it doesn't exist
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
+            # save the features
             np.save(save_path, features)
+
+print("Done extracting features!")
