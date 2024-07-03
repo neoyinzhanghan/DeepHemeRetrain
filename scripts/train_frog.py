@@ -189,9 +189,9 @@ if __name__ == "__main__":
     HemeLabel_ckpt_path = "/media/hdd1/neo/resources/HemeLabel_weights.ckpt"
     model = model_create(num_classes=23, path=HemeLabel_ckpt_path)
 
-    data_dir = "/media/hdd1/neo/pooled_deepheme_data/train"
+    data_dir = "/media/hdd1/neo/pooled_deepheme_data/val"
 
-    save_dir = "/media/hdd1/neo/pooled_deepheme_data_features_frog/train"
+    save_dir = "/media/hdd1/neo/pooled_deepheme_data_features_frog/val"
 
     os.makedirs(save_dir, exist_ok=True)
 
