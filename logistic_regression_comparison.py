@@ -134,7 +134,7 @@ def plot_curves(
     axes[1].tick_params(axis="y", colors="white")
 
     plt.tight_layout(rect=[0, 0, 1, 0.96])
-    plt.suptitle("Matrix-Themed Curves", color="white", fontsize=16, weight="bold")
+    plt.suptitle("ROC and PR Curves", color="white", fontsize=16, weight="bold")
 
     return fig
 
