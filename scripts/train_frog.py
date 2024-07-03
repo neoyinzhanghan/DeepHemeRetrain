@@ -193,6 +193,8 @@ if __name__ == "__main__":
 
     save_dir = "/media/hdd1/neo/pooled_deepheme_data_features_frog/train"
 
+    os.makedirs(save_dir, exist_ok=True)
+
     # extract features from the data_dir for all the jpg and png files, and save the features in the save_dir under the exact same folder structure and file name but with .npy extension
     for root, dirs, files in tqdm(os.walk(data_dir), desc="Processing Files"):
         for file in files:
