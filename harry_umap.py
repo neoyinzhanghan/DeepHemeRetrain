@@ -63,7 +63,7 @@ class Ruby_UMAP:
             image_feature = np.load(image_path)
             assert image_feature.shape == (
                 2048,
-            ), f"features shape is {image_features.shape} instead of (2048,)"
+            ), f"features shape is {image_feature.shape} instead of (2048,)"
             image_features.append(image_feature)
 
         image_features = np.array(image_features)
@@ -202,7 +202,9 @@ if __name__ == "__main__":
             labels
         ), "Length of image dirs and labels should be the same"
     elif args.using_image_folder:
-        print("Getting data from image folder, should be in the format of 'label/image.npy'")
+        print(
+            "Getting data from image folder, should be in the format of 'label/image.npy'"
+        )
         image_dirs = glob.glob(os.path.join(args.image_folder, "*", "*.npy"))
         labels = [
             os.path.basename(os.path.dirname(image_dir)) for image_dir in image_dirs
