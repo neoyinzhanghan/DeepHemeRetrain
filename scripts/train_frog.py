@@ -186,7 +186,7 @@ if __name__ == "__main__":
 
     from tqdm import tqdm
 
-    HemeLabel_ckpt_path = "/media/hdd3/neo/resources/HemeLabel_weights.ckpt"
+    HemeLabel_ckpt_path = "/media/hdd1/neo/resources/HemeLabel_weights.ckpt"
     model = model_create(num_classes=23, path=HemeLabel_ckpt_path)
 
     data_dir = "/media/hdd1/neo/pooled_deepheme_data/test"
