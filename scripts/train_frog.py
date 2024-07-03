@@ -189,9 +189,9 @@ if __name__ == "__main__":
     HemeLabel_ckpt_path = "/media/hdd1/neo/resources/HemeLabel_weights.ckpt"
     model = model_create(num_classes=23, path=HemeLabel_ckpt_path)
 
-    data_dir = "/media/hdd1/neo/pooled_deepheme_data/test"
+    data_dir = "/media/hdd1/neo/pooled_deepheme_data/train"
 
-    save_dir = "/media/hdd1/neo/pooled_deepheme_data_features_frog/test"
+    save_dir = "/media/hdd1/neo/pooled_deepheme_data_features_frog/train"
 
     # extract features from the data_dir for all the jpg and png files, and save the features in the save_dir under the exact same folder structure and file name but with .npy extension
     for root, dirs, files in tqdm(os.walk(data_dir), desc="Processing Files"):
