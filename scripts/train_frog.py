@@ -18,9 +18,9 @@ from torch.utils.data import WeightedRandomSampler
 ####### DEFINE HYPERPARAMETERS AND DATA DIRECTORIES ########################
 ############################################################################
 
-num_epochs = 50
+num_epochs = 500
 default_config = {"lr": 3.56e-06}
-data_dir = "/media/hdd1/neo/pooled_deepheme_data"
+data_dir = "/media/hdd1/neo/pooled_deepheme_data_blast_binary"
 num_gpus = 3
 num_workers = 20
 downsample_factor = 1
@@ -108,9 +108,7 @@ class ImageDataModule(pl.LightningDataModule):
             [
                 transforms.Resize((96, 96)),
                 transforms.ToTensor(),
-                transforms.Normalize(
-                    [0.5594, 0.4984, 0.6937], [0.2701, 0.2835, 0.2176]
-                ),
+                transforms.Normalize([0.5594, 0.4984, 0.6937], [0.2701, 0.2835, 0.2176]),
             ]
         )
 
@@ -223,12 +221,10 @@ class Myresnext50(pl.LightningModule):
     def forward(self, x, return_features=False):
         features = self.pretrained(x)
         x = self.my_new_layers(features)
-        pred = torch.sigmoid(x.reshape(x.shape[0], 1, self.num_classes))
-
         if return_features:
-            return pred, features
+            return x, features
         else:
-            return pred
+            return x
 
     def extract_features(self, x):
         layers = list(self.pretrained.children())[:-1]  # Remove the last fc layer
