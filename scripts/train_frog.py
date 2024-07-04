@@ -108,7 +108,9 @@ class ImageDataModule(pl.LightningDataModule):
             [
                 transforms.Resize((96, 96)),
                 transforms.ToTensor(),
-                transforms.Normalize([0.5594, 0.4984, 0.6937], [0.2701, 0.2835, 0.2176]),
+                transforms.Normalize(
+                    [0.5594, 0.4984, 0.6937], [0.2701, 0.2835, 0.2176]
+                ),
             ]
         )
 
@@ -199,9 +201,9 @@ class ImageDataModule(pl.LightningDataModule):
 
 # Model Module
 class Myresnext50(pl.LightningModule):
-    def __init__(self, my_pretrained_model, num_classes=23, config=default_config):
+    def __init__(self, num_classes=23, config=default_config):
         super(Myresnext50, self).__init__()
-        self.pretrained = my_pretrained_model
+        self.pretrained = models.resnext50_32x4d(pretrained=True)
         self.my_new_layers = nn.Sequential(
             nn.Linear(1000, 100), nn.ReLU(), nn.Linear(100, num_classes)
         )
@@ -232,7 +234,9 @@ class Myresnext50(pl.LightningModule):
             [
                 transforms.Resize((96, 96)),
                 transforms.ToTensor(),
-                transforms.Normalize([0.5594, 0.4984, 0.6937], [0.2701, 0.2835, 0.2176]),
+                transforms.Normalize(
+                    [0.5594, 0.4984, 0.6937], [0.2701, 0.2835, 0.2176]
+                ),
             ]
         )
 
@@ -297,7 +301,7 @@ def train_model(downsample_factor):
         downsample_factor=downsample_factor,
     )
     pretrained_model = models.resnext50_32x4d(pretrained=True)
-    model = Myresnext50(my_pretrained_model=pretrained_model, num_classes=num_classes)
+    model = Myresnext50(num_classes=num_classes)
 
     # Logger
     logger = TensorBoardLogger("lightning_logs", name=str(downsample_factor))
@@ -313,6 +317,20 @@ def train_model(downsample_factor):
     trainer.test(model, data_module.test_dataloader())
 
 
+# def model_create(path, num_classes=23):
+#     """
+#     Create a model instance from a given checkpoint.
+
+#     Parameters:
+#     - checkpoint_path (str): The file path to the PyTorch Lightning checkpoint.
+
+#     Returns:
+#     - model (Myresnext50): The loaded model ready for inference or further training.
+#     """
+#     model = Myresnext50.load_from_checkpoint(path)
+#     return model
+
+
 def model_create(path, num_classes=23):
     """
     Create a model instance from a given checkpoint.
@@ -323,6 +341,12 @@ def model_create(path, num_classes=23):
     Returns:
     - model (Myresnext50): The loaded model ready for inference or further training.
     """
+    # Instantiate the model with any required configuration
+    # model = Myresnext50(
+    #     num_classes=num_classes
+    # )  # Adjust the number of classes if needed
+
+    # # Load the model weights from a checkpoint
     model = Myresnext50.load_from_checkpoint(path)
     return model
 
