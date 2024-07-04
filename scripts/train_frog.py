@@ -227,11 +227,20 @@ class Myresnext50(pl.LightningModule):
             return x
 
     def extract_features(self, x):
-        layers = list(self.pretrained.children())[:-1]  # Remove the last fc layer
-        feature_extractor = nn.Sequential(*layers)
-        x = feature_extractor(x)
-        x = nn.Flatten()(x)  # Flatten the output if needed
-        return x
+        # first apply transformations
+        transform = transforms.Compose(
+            [
+                transforms.Resize((96, 96)),
+                transforms.ToTensor(),
+                transforms.Normalize([0.5594, 0.4984, 0.6937], [0.2701, 0.2835, 0.2176]),
+            ]
+        )
+
+        x = transform(x)
+
+        x, features = self.forward(x, return_features=True)
+
+        return features
 
     def training_step(self, batch, batch_idx):
         x, y = batch

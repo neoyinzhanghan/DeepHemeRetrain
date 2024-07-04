@@ -1,11 +1,11 @@
 import os
 import numpy as np
-from train import Myresnext50, model_create
+from train_frog import Myresnext50, model_create
 from tqdm import tqdm
 from PIL import Image
 from torchvision import transforms
 
-model_ckpt_path = "/media/hdd1/neo/MODELS/2024-06-11  DeepHemeRetrain non-frog feature deploy/1/version_0/checkpoints/epoch=499-step=27500.ckpt"
+model_ckpt_path = "~/Documents/neo/DeepHemeRetrain/lightning_logs/1/version_0/checkpoints/epoch=499-step=27500.ckpt"
 data_dir = "/media/hdd1/neo/pooled_deepheme_data/test"
 save_dir = "/media/hdd1/neo/pooled_deepheme_data_features/test"
 
@@ -36,8 +36,8 @@ for root, dirs, files in os.walk(data_dir):
             # REMOVE BATCH DIMENSION and assert that the image has shape (2048,)
             features = features.squeeze()
             assert features.shape == (
-                2048,
-            ), f"features shape is {features.shape} instead of (2048,)"
+                1000,
+            ), f"features shape is {features.shape} instead of (1000,)"
 
             # move the feature back to cpu and convert to numpy
             features = features.cpu().detach().numpy()

@@ -155,20 +155,20 @@ if st.button("Submit"):
     start_time = time.time()
 
     with st.spinner("Running UMAP..."):
-        # reducer = umap.UMAP(
-        #     n_components=n_components,
-        #     n_neighbors=n_neighbors,
-        #     min_dist=min_dist,
-        #     n_epochs=n_epochs,
-        #     metric='euclidean'
-        # )
-
-        # Apply UMAP to the extracted features
         reducer = umap_.UMAP(
+            n_components=n_components,
             n_neighbors=n_neighbors,
             min_dist=min_dist,
-            n_components=n_components,
+            n_epochs=n_epochs,
+            metric='euclidean'
         )
+
+        # # Apply UMAP to the extracted features
+        # reducer = umap_.UMAP(
+        #     n_neighbors=n_neighbors,
+        #     min_dist=min_dist,
+        #     n_components=n_components,
+        # )
 
         umap_result = reducer.fit_transform(combined_features)
 
