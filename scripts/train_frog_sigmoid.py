@@ -14,14 +14,13 @@ from torchvision import transforms, datasets, models
 from torchmetrics import Accuracy, AUROC
 from torch.utils.data import WeightedRandomSampler
 
-
 ############################################################################
 ####### DEFINE HYPERPARAMETERS AND DATA DIRECTORIES ########################
 ############################################################################
 
 num_epochs = 500
-default_config = {"lr": 3.56e-06}  # 1.462801279401232e-06}
-data_dir = "/media/hdd1/neo/pooled_deepheme_data_blast_binary"
+default_config = {"lr": 3.56e-05}  #  3.56e-06}
+data_dir = "/media/hdd1/neo/pooled_deepheme_data"
 num_gpus = 3
 num_workers = 20
 downsample_factor = 1
@@ -37,7 +36,7 @@ num_classes = 23
 def get_feat_extract_augmentation_pipeline(image_size):
     """Returns a randomly chosen augmentation pipeline for SSL."""
 
-    ## Simple augumentation to improve the data generalizability
+    ## Simple augmentation to improve the data generalizability
     transform_shape = A.Compose(
         [
             A.ShiftScaleRotate(p=0.8),
@@ -107,9 +106,11 @@ class ImageDataModule(pl.LightningDataModule):
         self.downsample_factor = downsample_factor
         self.transform = transforms.Compose(
             [
+                transforms.Resize((96, 96)),
                 transforms.ToTensor(),
-                # Additional normalization can be uncommented and adjusted if needed
-                # transforms.Normalize(mean=(0.61070228, 0.54225375, 0.65411311), std=(0.1485182, 0.1786308, 0.12817113))
+                transforms.Normalize(
+                    [0.5594, 0.4984, 0.6937], [0.2701, 0.2835, 0.2176]
+                ),
             ]
         )
 
@@ -203,15 +204,10 @@ class Myresnext50(pl.LightningModule):
     def __init__(self, num_classes=23, config=default_config):
         super(Myresnext50, self).__init__()
         self.pretrained = models.resnext50_32x4d(pretrained=True)
-        self.pretrained.fc = nn.Linear(self.pretrained.fc.in_features, num_classes)
-        # self.my_new_layers = nn.Sequential(
-        #     nn.Linear(
-        #         1000, 100
-        #     ),  # Assuming the output of your pre-trained model is 1000
-        #     nn.ReLU(),
-        #     nn.Linear(100, num_classes),
-        # )
-        # self.num_classes = num_classes
+        self.my_new_layers = nn.Sequential(
+            nn.Linear(1000, 100), nn.ReLU(), nn.Linear(100, num_classes)
+        )
+        self.num_classes = num_classes
 
         task = "multiclass"
 
@@ -224,26 +220,38 @@ class Myresnext50(pl.LightningModule):
 
         self.config = config
 
-    def forward(self, x):
-        x = self.pretrained(x)
-
-        return x
+    def forward(self, x, return_features=False):
+        features = self.pretrained(x)
+        x = self.my_new_layers(features)
+        if return_features:
+            return x, features
+        else:
+            return x
 
     def extract_features(self, x):
-        # Extract features before the last fc layer
-        layers = list(self.pretrained.children())[:-1]  # Remove the last fc layer
-        feature_extractor = nn.Sequential(*layers)
-        x = feature_extractor(x)
-        x = nn.Flatten()(x)  # Flatten the output if needed
-        return x
+        # first apply transformations
+
+        transform = transforms.Compose(
+            [
+                transforms.Normalize(
+                    [0.5594, 0.4984, 0.6937], [0.2701, 0.2835, 0.2176]
+                ),
+            ]
+        )
+
+        x = transform(x)
+
+        x, features = self.forward(x, return_features=True)
+
+        return features
 
     def training_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat, y)
+        loss = F.binary_cross_entropy_with_logits(y_hat, y)
         self.log("train_loss", loss)
-        self.train_accuracy(y_hat, y)
-        self.train_auroc(y_hat, y)
+        self.train_accuracy(torch.sigmoid(y_hat), y.int())
+        self.train_auroc(torch.sigmoid(y_hat), y.int())
         self.log("train_acc", self.train_accuracy, on_step=True, on_epoch=True)
         self.log("train_auroc", self.train_auroc, on_step=True, on_epoch=True)
         return loss
@@ -256,10 +264,10 @@ class Myresnext50(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat, y)
+        loss = F.binary_cross_entropy_with_logits(y_hat, y)
         self.log("val_loss", loss, on_step=False, on_epoch=True)
-        self.val_accuracy(y_hat, y)
-        self.val_auroc(y_hat, y)
+        self.val_accuracy(torch.sigmoid(y_hat), y.int())
+        self.val_auroc(torch.sigmoid(y_hat), y.int())
         return loss
 
     def on_validation_epoch_end(self):
@@ -271,16 +279,15 @@ class Myresnext50(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat, y)
+        loss = F.binary_cross_entropy_with_logits(y_hat, y)
         self.log("test_loss", loss, on_step=False, on_epoch=True)
-        self.test_accuracy(y_hat, y)
-        self.test_auroc(y_hat, y)
+        self.test_accuracy(torch.sigmoid(y_hat), y.int())
+        self.test_auroc(torch.sigmoid(y_hat), y.int())
         return loss
 
     def on_test_epoch_end(self):
         self.log("test_acc_epoch", self.test_accuracy.compute())
         self.log("test_auroc_epoch", self.test_auroc.compute())
-        # Handle or reset saved outputs as needed
         current_lr = self.trainer.optimizers[0].param_groups[0]["lr"]
         self.log("learning_rate", current_lr, on_epoch=True)
 
@@ -292,6 +299,7 @@ def train_model(downsample_factor):
         batch_size=batch_size,
         downsample_factor=downsample_factor,
     )
+    pretrained_model = models.resnext50_32x4d(pretrained=True)
     model = Myresnext50(num_classes=num_classes)
 
     # Logger
@@ -306,6 +314,20 @@ def train_model(downsample_factor):
     )
     trainer.fit(model, data_module)
     trainer.test(model, data_module.test_dataloader())
+
+
+# def model_create(path, num_classes=23):
+#     """
+#     Create a model instance from a given checkpoint.
+
+#     Parameters:
+#     - checkpoint_path (str): The file path to the PyTorch Lightning checkpoint.
+
+#     Returns:
+#     - model (Myresnext50): The loaded model ready for inference or further training.
+#     """
+#     model = Myresnext50.load_from_checkpoint(path)
+#     return model
 
 
 def model_create(path, num_classes=23):
@@ -327,8 +349,7 @@ def model_create(path, num_classes=23):
     model = Myresnext50.load_from_checkpoint(path)
     return model
 
+
 if __name__ == "__main__":
     # Run training for each downsampling factor
-
-    # Train the model
     train_model(downsample_factor=downsample_factor)

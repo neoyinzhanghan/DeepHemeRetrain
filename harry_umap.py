@@ -62,7 +62,7 @@ class Ruby_UMAP:
         for image_path in self.image_dir:
             image_feature = np.load(image_path)
             assert image_feature.shape == (
-                2048,
+                1000,
             ), f"features shape is {image_feature.shape} instead of (2048,)"
             image_features.append(image_feature)
 
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--image_folder",
         type=str,
-        default="/Users/neo/Documents/DATA/pooled_deepheme_data_features/test",
+        default="/Users/neo/Documents/DATA/pooled_deepheme_data_features_new_frog/test",
         help="Path to the image folder",
     )
     parser.add_argument(
