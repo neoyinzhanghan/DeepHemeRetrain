@@ -95,7 +95,11 @@ class DownsampledDataset(torch.utils.data.Dataset):
 
         image = to_tensor(image)
 
-        return image, label
+        # Convert label to one-hot encoded vector
+        one_hot_label = torch.zeros(num_classes)
+        one_hot_label[label] = 1
+
+        return image, one_hot_label
 
 
 class ImageDataModule(pl.LightningDataModule):
