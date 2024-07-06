@@ -32,6 +32,7 @@ num_classes = 23
 ####### FUNCTIONS FOR DATA AUGMENTATION AND DATA LOADING ###################
 ############################################################################
 
+
 def get_feat_extract_augmentation_pipeline(image_size):
     """Returns a randomly chosen augmentation pipeline for SSL."""
 
@@ -63,6 +64,7 @@ def get_feat_extract_augmentation_pipeline(image_size):
     return A.Compose(
         [A.Resize(image_size, image_size), A.OneOf([transform_shape, transform_color])]
     )
+
 
 # Define a custom dataset that applies downsampling
 class DownsampledDataset(torch.utils.data.Dataset):
@@ -98,6 +100,7 @@ class DownsampledDataset(torch.utils.data.Dataset):
         one_hot_label[label] = 1
 
         return image, one_hot_label
+
 
 class ImageDataModule(pl.LightningDataModule):
     def __init__(self, data_dir, batch_size, downsample_factor):
@@ -199,6 +202,7 @@ class ImageDataModule(pl.LightningDataModule):
             num_workers=20,
         )
 
+
 # Model Module
 class Myresnext50(pl.LightningModule):
     def __init__(self, num_classes=23, config=default_config):
@@ -224,9 +228,12 @@ class Myresnext50(pl.LightningModule):
         features = self.pretrained(x)
         x = self.my_new_layers(features)
         if return_features:
-            return x, features
+
+            output = torch.sigmoid(x)
+            return output, features
         else:
-            return torch.sigmoid(x)
+            output = torch.sigmoid(x)
+            return output
 
     def extract_features(self, x):
         # first apply transformations
@@ -250,7 +257,7 @@ class Myresnext50(pl.LightningModule):
         y_hat = self.forward(x)
         loss = F.binary_cross_entropy_with_logits(y_hat, y)
         self.log("train_loss", loss)
-        self.train_accuracy(y_hat, y.int())
+        self.train_accuracy(y_hat, y.argmax(dim=1))
         self.train_auroc(y_hat, y.argmax(dim=1))
         self.log("train_acc", self.train_accuracy, on_step=True, on_epoch=True)
         self.log("train_auroc", self.train_auroc, on_step=True, on_epoch=True)
@@ -266,7 +273,7 @@ class Myresnext50(pl.LightningModule):
         y_hat = self.forward(x)
         loss = F.binary_cross_entropy_with_logits(y_hat, y)
         self.log("val_loss", loss, on_step=False, on_epoch=True)
-        self.val_accuracy(y_hat, y.int())
+        self.val_accuracy(y_hat, y.argmax(dim=1))
         self.val_auroc(y_hat, y.argmax(dim=1))
         return loss
 
@@ -281,7 +288,7 @@ class Myresnext50(pl.LightningModule):
         y_hat = self.forward(x)
         loss = F.binary_cross_entropy_with_logits(y_hat, y)
         self.log("test_loss", loss, on_step=False, on_epoch=True)
-        self.test_accuracy(y_hat, y.int())
+        self.test_accuracy(y_hat, y.argmax(dim=1))
         self.test_auroc(y_hat, y.argmax(dim=1))
 
         return loss
@@ -291,6 +298,7 @@ class Myresnext50(pl.LightningModule):
         self.log("test_auroc_epoch", self.test_auroc.compute())
         current_lr = self.trainer.optimizers[0].param_groups[0]["lr"]
         self.log("learning_rate", current_lr, on_epoch=True)
+
 
 # Main training loop
 def train_model(downsample_factor):
@@ -315,6 +323,7 @@ def train_model(downsample_factor):
     trainer.fit(model, data_module)
     trainer.test(model, data_module.test_dataloader())
 
+
 # def model_create(path, num_classes=23):
 #     """
 #     Create a model instance from a given checkpoint.
@@ -327,6 +336,7 @@ def train_model(downsample_factor):
 #     """
 #     model = Myresnext50.load_from_checkpoint(path)
 #     return model
+
 
 def model_create(path, num_classes=23):
     """
@@ -346,6 +356,7 @@ def model_create(path, num_classes=23):
     # # Load the model weights from a checkpoint
     model = Myresnext50.load_from_checkpoint(path)
     return model
+
 
 if __name__ == "__main__":
     # Run training for each downsampling factor
