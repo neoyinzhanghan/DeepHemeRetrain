@@ -255,7 +255,7 @@ class Myresnext50(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self.forward(x)
-        loss = F.binary_cross_entropy_with_logits(y_hat, y)
+        loss = F.CrossEntropyLoss()(y_hat, y.argmax(dim=1))
         self.log("train_loss", loss)
         self.train_accuracy(y_hat, y.argmax(dim=1))
         self.train_auroc(y_hat, y.argmax(dim=1))
