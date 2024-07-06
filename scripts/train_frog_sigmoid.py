@@ -251,7 +251,7 @@ class Myresnext50(pl.LightningModule):
         loss = F.binary_cross_entropy_with_logits(y_hat, y)
         self.log("train_loss", loss)
         self.train_accuracy(y_hat, y.int())
-        self.train_auroc(y_hat, y.int())
+        self.train_auroc(y_hat, y.argmax(dim=1))
         self.log("train_acc", self.train_accuracy, on_step=True, on_epoch=True)
         self.log("train_auroc", self.train_auroc, on_step=True, on_epoch=True)
         return loss
@@ -267,7 +267,7 @@ class Myresnext50(pl.LightningModule):
         loss = F.binary_cross_entropy_with_logits(y_hat, y)
         self.log("val_loss", loss, on_step=False, on_epoch=True)
         self.val_accuracy(y_hat, y.int())
-        self.val_auroc(y_hat, y.int())
+        self.val_auroc(y_hat, y.argmax(dim=1))
         return loss
 
     def on_validation_epoch_end(self):
@@ -282,7 +282,8 @@ class Myresnext50(pl.LightningModule):
         loss = F.binary_cross_entropy_with_logits(y_hat, y)
         self.log("test_loss", loss, on_step=False, on_epoch=True)
         self.test_accuracy(y_hat, y.int())
-        self.test_auroc(y_hat, y.int())
+        self.test_auroc(y_hat, y.argmax(dim=1))
+
         return loss
 
     def on_test_epoch_end(self):
