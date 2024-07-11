@@ -21,11 +21,7 @@ def create_imagenet_structure(metadata_csv, save_dir):
     for _, row in tqdm(df.iterrows(), desc="Copying files"):
         src_path = row["fpath"]
         label = row["label"]
-        split = row["split"]
-
-        print(type(src_path))
-        print(type(label))
-        print(type(split))
+        split = str(row["split"])
 
         # Create label directory under the respective split
         label_dir = os.path.join(save_dir, split, label)
