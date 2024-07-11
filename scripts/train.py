@@ -20,12 +20,12 @@ from torch.utils.data import WeightedRandomSampler
 ############################################################################
 
 num_epochs = 10
-default_config = {"lr": 3.56e-06}  # 1.462801279401232e-06}
+default_config = {"lr": 3.56e-05}  # 1.462801279401232e-06}
 data_dir = "/home/cat/Documents/neo/DeepHemeRetrain"
 num_gpus = 3
 num_workers = 24
 downsample_factor = 1
-batch_size = 512
+batch_size = 256
 img_size = 96
 num_classes = 23
 
