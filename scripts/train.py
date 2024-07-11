@@ -19,9 +19,9 @@ from torch.utils.data import WeightedRandomSampler
 ####### DEFINE HYPERPARAMETERS AND DATA DIRECTORIES ########################
 ############################################################################
 
-num_epochs = 500
+num_epochs = 10
 default_config = {"lr": 3.56e-06}  # 1.462801279401232e-06}
-data_dir = "/media/hdd1/neo/pooled_deepheme_data"
+data_dir = "/home/cat/Documents/neo/DeepHemeRetrain"
 num_gpus = 3
 num_workers = 20
 downsample_factor = 1
@@ -326,6 +326,7 @@ def model_create(path, num_classes=23):
     # # Load the model weights from a checkpoint
     model = Myresnext50.load_from_checkpoint(path)
     return model
+
 
 if __name__ == "__main__":
     # Run training for each downsampling factor

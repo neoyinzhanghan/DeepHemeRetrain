@@ -9,7 +9,7 @@ import time
 from sklearn.preprocessing import StandardScaler
 
 # Define the features directory
-features_dir = "/Users/neo/Documents/DATA/pooled_deepheme_data_features/test"
+features_dir = "/Users/neo/Documents/DATA/pooled_deepheme_data_features/train"
 
 
 def get_all_class_names():
@@ -137,7 +137,7 @@ k = n_samples_per_class
 suggested_n_neighbors = int(np.sqrt(k))
 
 n_neighbors = st.slider(
-    "Number of Neighbors", min_value=5, max_value=50, value=suggested_n_neighbors
+    "Number of Neighbors", min_value=5, max_value=5000, value=suggested_n_neighbors
 )
 min_dist = st.slider("Minimum Distance", min_value=0.0, max_value=1.0, value=0.1)
 n_epochs = st.slider("Number of Epochs", min_value=100, max_value=5000, value=500)

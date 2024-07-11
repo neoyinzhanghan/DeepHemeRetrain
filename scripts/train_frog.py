@@ -108,9 +108,9 @@ class ImageDataModule(pl.LightningDataModule):
             [
                 transforms.Resize((96, 96)),
                 transforms.ToTensor(),
-                transforms.Normalize(
-                    [0.5594, 0.4984, 0.6937], [0.2701, 0.2835, 0.2176]
-                ),
+                # transforms.Normalize(
+                #     [0.5594, 0.4984, 0.6937], [0.2701, 0.2835, 0.2176]
+                # ),
             ]
         )
 
@@ -233,9 +233,9 @@ class Myresnext50(pl.LightningModule):
 
         transform = transforms.Compose(
             [
-                transforms.Normalize(
-                    [0.5594, 0.4984, 0.6937], [0.2701, 0.2835, 0.2176]
-                ),
+                # transforms.Normalize(
+                #     [0.5594, 0.4984, 0.6937], [0.2701, 0.2835, 0.2176]
+                # ),
             ]
         )
 
