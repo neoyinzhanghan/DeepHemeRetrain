@@ -23,7 +23,7 @@ num_epochs = 10
 default_config = {"lr": 3.56e-06}  # 1.462801279401232e-06}
 data_dir = "/home/cat/Documents/neo/DeepHemeRetrain"
 num_gpus = 3
-num_workers = 20
+num_workers = 24
 downsample_factor = 1
 batch_size = 256
 img_size = 96
@@ -178,7 +178,7 @@ class ImageDataModule(pl.LightningDataModule):
             self.train_dataset,
             batch_size=self.batch_size,
             sampler=self.train_sampler,
-            num_workers=20,
+            num_workers=24,
         )
 
     def val_dataloader(self):
@@ -186,7 +186,7 @@ class ImageDataModule(pl.LightningDataModule):
             self.val_dataset,
             batch_size=self.batch_size,
             sampler=self.val_sampler,
-            num_workers=20,
+            num_workers=24,
         )
 
     def test_dataloader(self):
@@ -194,7 +194,7 @@ class ImageDataModule(pl.LightningDataModule):
             self.test_dataset,
             batch_size=self.batch_size,
             sampler=self.test_sampler,
-            num_workers=20,
+            num_workers=24,
         )
 
 
