@@ -177,7 +177,7 @@ if __name__ == "__main__":
 
     # UMAP arguments
     parser.add_argument(
-        "--n_neighbors", type=int, default=15, help="Number of neighbors"
+        "--n_neighbors", type=int, default=500, help="Number of neighbors"
     )
     parser.add_argument("--min_dist", type=float, default=0.1, help="Minimum distance")
     parser.add_argument(
