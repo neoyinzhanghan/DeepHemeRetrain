@@ -6,8 +6,8 @@ from PIL import Image
 from torchvision import transforms
 
 model_ckpt_path = "/media/hdd1/neo/MODELS/2024-07-11 Frog Softmax Epochs=50/1/version_0/checkpoints/epoch=49-step=1400.ckpt"
-data_dir = "/media/hdd1/neo/pooled_deepheme_data/test"
-save_dir = "/media/hdd1/neo/pooled_deepheme_data_features_frog_v2/test"
+data_dir = "/media/hdd1/neo/pooled_deepheme_data/train"
+save_dir = "/media/hdd1/neo/pooled_deepheme_data_features_frog_v2/train"
 
 os.makedirs(save_dir, exist_ok=True)
 
