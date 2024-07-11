@@ -5,9 +5,11 @@ from tqdm import tqdm
 from PIL import Image
 from torchvision import transforms
 
-model_ckpt_path = "~/Documents/neo/DeepHemeRetrain/lightning_logs/1/version_0/checkpoints/epoch=499-step=27500.ckpt"
+model_ckpt_path = "/media/hdd1/neo/MODELS/2024-07-11 Frog Softmax Epochs=50/1/version_0/checkpoints/epoch=49-step=1400.ckpt"
 data_dir = "/media/hdd1/neo/pooled_deepheme_data/val"
-save_dir = "/media/hdd1/neo/pooled_deepheme_data_features_new_frog/val"
+save_dir = "/media/hdd1/neo/pooled_deepheme_data_features_frog_v2/val"
+
+os.makedirs(save_dir, exist_ok=True)
 
 model = model_create(model_ckpt_path, num_classes=23)
 
