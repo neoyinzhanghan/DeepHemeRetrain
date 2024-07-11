@@ -186,12 +186,12 @@ if __name__ == "__main__":
 
     from tqdm import tqdm
 
-    HemeLabel_ckpt_path = "/media/hdd1/neo/resources/HemeLabel_weights.ckpt"
+    HemeLabel_ckpt_path = "/media/hdd1/neo/MODELS/2024-07-11 Frog Softmax Epochs=50/1/version_0/checkpoints/epoch=49-step=1400.ckpt"
     model = model_create(num_classes=23, path=HemeLabel_ckpt_path)
 
     data_dir = "/media/hdd1/neo/pooled_deepheme_data/val"
 
-    save_dir = "/media/hdd1/neo/pooled_deepheme_data_features_frog/val"
+    save_dir = "/media/hdd1/neo/pooled_deepheme_data_features_frog_v2/val"
 
     os.makedirs(save_dir, exist_ok=True)
 
@@ -199,11 +199,18 @@ if __name__ == "__main__":
     for root, dirs, files in tqdm(os.walk(data_dir), desc="Processing Files"):
         for file in files:
             # check if the file is an image
-            if file.endswith(".png") or file.endswith(".jpg"):
+            if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
                 img = Image.open(os.path.join(root, file)).convert("RGB")
 
                 # extract features
                 features = get_features_batch([img], model)
+
+                # check that the features are 1000-dimensional
+                print(features[0].shape)
+
+                import sys
+
+                sys.exit()
 
                 # get the save_path which is same folder structure and file name but with .npy extension
                 save_path = os.path.join(
