@@ -25,7 +25,7 @@ data_dir = "/home/cat/Documents/neo/DeepHemeRetrain"
 num_gpus = 3
 num_workers = 24
 downsample_factor = 1
-batch_size = 256
+batch_size = 512
 img_size = 96
 num_classes = 23
 
