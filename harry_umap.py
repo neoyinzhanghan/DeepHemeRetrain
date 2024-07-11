@@ -151,7 +151,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--image_folder",
         type=str,
-        default="/Users/neo/Documents/DATA/pooled_deepheme_data_features_new_frog/test",
+        default="/Users/neo/Documents/DATA/pooled_deepheme_data_features_frog_v2/test",
         help="Path to the image folder",
     )
     parser.add_argument(

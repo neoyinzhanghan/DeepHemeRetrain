@@ -9,7 +9,7 @@ import time
 from sklearn.preprocessing import StandardScaler
 
 # Define the features directory
-features_dir = "/Users/neo/Documents/DATA/pooled_deepheme_data_features/train"
+features_dir = "/Users/neo/Documents/DATA/pooled_deepheme_data_features_frog_v2/test"
 
 
 def get_all_class_names():
