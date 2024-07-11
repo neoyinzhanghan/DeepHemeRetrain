@@ -22,6 +22,14 @@ def create_imagenet_structure(metadata_csv, save_dir):
         label = row["label"]
         split = row["split"]
 
+        print(type(src_path))
+        print(type(label))
+        print(type(split))
+
+        import sys
+
+        sys.exit()
+
         # Create label directory under the respective split
         label_dir = os.path.join(save_dir, split, label)
         os.makedirs(label_dir, exist_ok=True)
