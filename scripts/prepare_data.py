@@ -5,7 +5,7 @@ from tqdm import tqdm
 import numpy as np
 from PIL import Image
 
-data_dirs = [
+labelled_data_dirs = [
     "/media/ssd2/dh_labelled_data/DeepHeme1/UCSF_repo",
     "/media/ssd2/dh_labelled_data/DeepHeme1/MSK_repo_normal",
     "/media/ssd2/dh_labelled_data/DeepHeme1/MSK_repo_mixed",
@@ -90,7 +90,7 @@ metadata = {
 
 current_idx = 0
 
-for data_dir in data_dirs:
+for data_dir in labelled_data_dirs:
     print(f"Processing {data_dir}")
 
     # get a list of all subdirectories in the data_dir

@@ -13,21 +13,35 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torchvision import transforms, datasets, models
 from torchmetrics import Accuracy, AUROC
 from torch.utils.data import WeightedRandomSampler
-
+from dataset import CustomDataset
 
 ############################################################################
 ####### DEFINE HYPERPARAMETERS AND DATA DIRECTORIES ########################
 ############################################################################
 
-num_epochs = 10
+num_epochs = 500
 default_config = {"lr": 3.56e-05}  # 1.462801279401232e-06}
-data_dir = "/home/cat/Documents/neo/DeepHemeRetrain"
+data_dir = "/media/hdd3/neo/pooled_deepheme_data"
 num_gpus = 3
 num_workers = 24
 downsample_factor = 1
 batch_size = 256
 img_size = 96
 num_classes = 23
+
+results_dirs_list = [
+    "/media/hdd3/neo/AML_bma",
+    "/media/hdd3/neo/b-all_bma",
+    "/media/hdd3/neo/lpl_bma",
+    "/media/hdd3/neo/myeloma_bma",
+]
+
+base_data_dir = "/media/hdd3/neo/pooled_deepheme_data"
+
+cell_types_list = ["M1", "M1", "L4", "L4"]
+
+base_data_sample_probability = 0.5
+sample_probabilities = [0.125, 0.125, 0.125, 0.125]
 
 ############################################################################
 ####### FUNCTIONS FOR DATA AUGMENTATION AND DATA LOADING ###################
@@ -37,7 +51,7 @@ num_classes = 23
 def get_feat_extract_augmentation_pipeline(image_size):
     """Returns a randomly chosen augmentation pipeline for SSL."""
 
-    ## Simple augumentation to improve the data generalizability
+    ## Simple augmentation to improve the data generalizability
     transform_shape = A.Compose(
         [
             A.ShiftScaleRotate(p=0.8),
@@ -100,9 +114,18 @@ class DownsampledDataset(torch.utils.data.Dataset):
 
 
 class ImageDataModule(pl.LightningDataModule):
-    def __init__(self, data_dir, batch_size, downsample_factor):
+    def __init__(
+        self,
+        data_dir,
+        results_dirs_list,
+        cell_types_list,
+        batch_size,
+        downsample_factor,
+    ):
         super().__init__()
         self.data_dir = data_dir
+        self.results_dirs_list = results_dirs_list
+        self.cell_types_list = cell_types_list
         self.batch_size = batch_size
         self.downsample_factor = downsample_factor
         self.transform = transforms.Compose(
@@ -114,7 +137,7 @@ class ImageDataModule(pl.LightningDataModule):
         )
 
     def setup(self, stage=None):
-        # Load train, validation and test datasets
+        # Load base train, validation, and test datasets
         train_dataset = datasets.ImageFolder(
             root=os.path.join(self.data_dir, "train"), transform=self.transform
         )
@@ -125,10 +148,20 @@ class ImageDataModule(pl.LightningDataModule):
             root=os.path.join(self.data_dir, "test"), transform=self.transform
         )
 
-        # Prepare the train dataset with downsampling and augmentation
-        self.train_dataset = DownsampledDataset(
-            train_dataset, self.downsample_factor, apply_augmentation=True
+        # Prepare the train dataset with CustomDataset and DownsampledDataset
+        combined_train_dataset = CustomDataset(
+            base_data_dir=self.data_dir,
+            results_dirs_list=self.results_dirs_list,
+            cell_types_list=self.cell_types_list,
+            base_data_sample_probability=0.5,
+            sample_probabilities=[0.125] * len(self.results_dirs_list),
+            transform=self.transform,
         )
+
+        self.train_dataset = DownsampledDataset(
+            combined_train_dataset, self.downsample_factor, apply_augmentation=True
+        )
+
         self.val_dataset = DownsampledDataset(
             val_dataset, self.downsample_factor, apply_augmentation=False
         )
@@ -136,7 +169,7 @@ class ImageDataModule(pl.LightningDataModule):
             test_dataset, self.downsample_factor, apply_augmentation=False
         )
 
-        # Compute class weights for handling imbalance
+        # Compute class weights for handling imbalance (for train dataset)
         class_counts_train = torch.tensor(
             [t[1] for t in train_dataset.samples]
         ).bincount()
@@ -289,9 +322,12 @@ class Myresnext50(pl.LightningModule):
 def train_model(downsample_factor):
     data_module = ImageDataModule(
         data_dir=data_dir,
+        results_dirs_list=results_dirs_list,
+        cell_types_list=cell_types_list,
         batch_size=batch_size,
         downsample_factor=downsample_factor,
     )
+
     model = Myresnext50(num_classes=num_classes)
 
     # Logger

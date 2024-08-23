@@ -228,7 +228,6 @@ class Myresnext50(pl.LightningModule):
         features = self.pretrained(x)
         x = self.my_new_layers(features)
         if return_features:
-
             output = torch.sigmoid(x)
             return output, features
         else:
@@ -237,7 +236,6 @@ class Myresnext50(pl.LightningModule):
 
     def extract_features(self, x):
         # first apply transformations
-
         transform = transforms.Compose(
             [
                 transforms.Normalize(
@@ -255,7 +253,7 @@ class Myresnext50(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self.forward(x)
-        loss = nn.CrossEntropyLoss()(y_hat, y.argmax(dim=1))
+        loss = F.binary_cross_entropy(y_hat, y)
         self.log("train_loss", loss)
         self.train_accuracy(y_hat, y.argmax(dim=1))
         self.train_auroc(y_hat, y.argmax(dim=1))
@@ -271,7 +269,7 @@ class Myresnext50(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self.forward(x)
-        loss = F.binary_cross_entropy_with_logits(y_hat, y)
+        loss = F.binary_cross_entropy(y_hat, y)
         self.log("val_loss", loss, on_step=False, on_epoch=True)
         self.val_accuracy(y_hat, y.argmax(dim=1))
         self.val_auroc(y_hat, y.argmax(dim=1))
@@ -286,7 +284,7 @@ class Myresnext50(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self.forward(x)
-        loss = F.binary_cross_entropy_with_logits(y_hat, y)
+        loss = F.binary_cross_entropy(y_hat, y)
         self.log("test_loss", loss, on_step=False, on_epoch=True)
         self.test_accuracy(y_hat, y.argmax(dim=1))
         self.test_auroc(y_hat, y.argmax(dim=1))
@@ -324,20 +322,6 @@ def train_model(downsample_factor):
     trainer.test(model, data_module.test_dataloader())
 
 
-# def model_create(path, num_classes=23):
-#     """
-#     Create a model instance from a given checkpoint.
-
-#     Parameters:
-#     - checkpoint_path (str): The file path to the PyTorch Lightning checkpoint.
-
-#     Returns:
-#     - model (Myresnext50): The loaded model ready for inference or further training.
-#     """
-#     model = Myresnext50.load_from_checkpoint(path)
-#     return model
-
-
 def model_create(path, num_classes=23):
     """
     Create a model instance from a given checkpoint.
@@ -348,12 +332,6 @@ def model_create(path, num_classes=23):
     Returns:
     - model (Myresnext50): The loaded model ready for inference or further training.
     """
-    # Instantiate the model with any required configuration
-    # model = Myresnext50(
-    #     num_classes=num_classes
-    # )  # Adjust the number of classes if needed
-
-    # # Load the model weights from a checkpoint
     model = Myresnext50.load_from_checkpoint(path)
     return model
 
