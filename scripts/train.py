@@ -116,14 +116,14 @@ class DownsampledDataset(torch.utils.data.Dataset):
 class ImageDataModule(pl.LightningDataModule):
     def __init__(
         self,
-        data_dir,
+        base_data_dir,
         results_dirs_list,
         cell_types_list,
         batch_size,
         downsample_factor,
     ):
         super().__init__()
-        self.data_dir = data_dir
+        self.data_dir = base_data_dir
         self.results_dirs_list = results_dirs_list
         self.cell_types_list = cell_types_list
         self.batch_size = batch_size
@@ -138,9 +138,6 @@ class ImageDataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
         # Load base train, validation, and test datasets
-        train_dataset = datasets.ImageFolder(
-            root=os.path.join(self.data_dir, "train"), transform=self.transform
-        )
         val_dataset = datasets.ImageFolder(
             root=os.path.join(self.data_dir, "val"), transform=self.transform
         )
@@ -150,7 +147,8 @@ class ImageDataModule(pl.LightningDataModule):
 
         # Prepare the train dataset with CustomDataset and DownsampledDataset
         combined_train_dataset = CustomDataset(
-            base_data_dir=self.data_dir,
+            base_data_dir=os.path.join(self.data_dir, "train"),
+            transform=self.transform,
             results_dirs_list=self.results_dirs_list,
             cell_types_list=self.cell_types_list,
             base_data_sample_probability=0.5,
@@ -171,11 +169,11 @@ class ImageDataModule(pl.LightningDataModule):
 
         # Compute class weights for handling imbalance (for train dataset)
         class_counts_train = torch.tensor(
-            [t[1] for t in train_dataset.samples]
+            [t[1] for t in combined_train_dataset.samples]
         ).bincount()
         class_weights_train = 1.0 / class_counts_train.float()
         sample_weights_train = class_weights_train[
-            [t[1] for t in train_dataset.samples]
+            [t[1] for t in combined_train_dataset.samples]
         ]
 
         class_counts_val = torch.tensor([t[1] for t in val_dataset.samples]).bincount()
