@@ -34,9 +34,6 @@ class CustomDataset(Dataset):
         self.num_base_data = len(self.base_dataset)
         self.num_data_points = 2 * self.num_base_data
 
-        # print the base_dataset.class_to_idx
-        print(self.base_dataset.class_to_idx)
-
     def sample_from_base_dir(self):
         # Class balancing: Choose a random class
         class_choice = random.choice(list(self.base_class_indices.keys()))
