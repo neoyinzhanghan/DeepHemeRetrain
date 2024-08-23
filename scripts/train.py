@@ -22,7 +22,7 @@ from dataset import CustomDataset
 num_epochs = 500
 default_config = {"lr": 3.56e-05}  # 1.462801279401232e-06}
 data_dir = "/media/hdd3/neo/pooled_deepheme_data"
-num_gpus = 3
+num_gpus = 2
 num_workers = 24
 downsample_factor = 1
 batch_size = 256
