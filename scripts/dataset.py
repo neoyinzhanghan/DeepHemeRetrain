@@ -5,6 +5,7 @@ from torchvision.datasets import ImageFolder
 from torchvision.transforms import transforms
 from PIL import Image
 
+
 class CustomDataset(Dataset):
     def __init__(
         self,
@@ -32,6 +33,13 @@ class CustomDataset(Dataset):
 
         self.num_base_data = len(self.base_dataset)
         self.num_data_points = 2 * self.num_base_data
+
+        # print the base_dataset.class_to_idx
+        print(self.base_dataset.class_to_idx)
+
+        import sys
+
+        sys.exit()
 
     def sample_from_base_dir(self):
         # Class balancing: Choose a random class
@@ -91,37 +99,3 @@ class CustomDataset(Dataset):
             image = self.transform(image)
 
         return image, label
-
-
-# Example usage
-transform = transforms.Compose(
-    [
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-    ]
-)
-
-results_dirs_list = [
-    "/media/hdd3/neo/AML_bma",
-    "/media/hdd3/neo/b-all_bma",
-    "/media/hdd3/neo/lpl_bma",
-    "/media/hdd3/neo/myeloma_bma",
-]
-
-base_data_dir = "/media/hdd3/neo/pooled_deepheme_data"
-
-cell_types_list = ["M1", "M1", "L4", "L4"]
-
-base_data_sample_probability = 0.5
-sample_probabilities = [0.125, 0.125, 0.125, 0.125]
-
-
-
-custom_dataset = CustomDataset(
-    base_data_dir=base_data_dir,
-    results_dirs_list=results_dirs_list,
-    cell_types_list=cell_types_list,
-    base_data_sample_probability=base_data_sample_probability,
-    sample_probabilities=sample_probabilities,
-    transform=transform,
-)
