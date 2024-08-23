@@ -37,10 +37,6 @@ class CustomDataset(Dataset):
         # print the base_dataset.class_to_idx
         print(self.base_dataset.class_to_idx)
 
-        import sys
-
-        sys.exit()
-
     def sample_from_base_dir(self):
         # Class balancing: Choose a random class
         class_choice = random.choice(list(self.base_class_indices.keys()))
