@@ -21,7 +21,7 @@ from dataset import CustomDataset
 
 num_epochs = 500
 default_config = {"lr": 3.56e-05}  # 1.462801279401232e-06}
-data_dir = "/media/hdd3/neo/pooled_deepheme_data"
+base_data_dir = "/media/hdd3/neo/pooled_deepheme_data"
 num_gpus = 2
 num_workers = 24
 downsample_factor = 1
@@ -35,8 +35,6 @@ results_dirs_list = [
     "/media/hdd3/neo/lpl_bma",
     "/media/hdd3/neo/myeloma_bma",
 ]
-
-base_data_dir = "/media/hdd3/neo/pooled_deepheme_data"
 
 cell_types_list = ["M1", "M1", "L4", "L4"]
 
@@ -319,9 +317,17 @@ class Myresnext50(pl.LightningModule):
 
 
 # Main training loop
-def train_model(downsample_factor):
+def train_model(
+    downsample_factor,
+    num_epochs=num_epochs,
+    base_data_dir=base_data_dir,
+    results_dirs_list=results_dirs_list,
+    cell_types_list=cell_types_list,
+    batch_size=batch_size,
+    num_classes=num_classes,
+):
     data_module = ImageDataModule(
-        data_dir=data_dir,
+        base_data_dir=base_data_dir,
         results_dirs_list=results_dirs_list,
         cell_types_list=cell_types_list,
         batch_size=batch_size,
