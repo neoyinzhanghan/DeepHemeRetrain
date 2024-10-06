@@ -369,6 +369,30 @@ def model_create(path, num_classes=23):
     model = Myresnext50.load_from_checkpoint(path)
     return model
 
+def model_predict(model, pil_image):
+    """
+    Perform inference using the given model on the provided image.
+    And return the softmax probabilities.
+    """
+
+    # Preprocess the image, by resizing and converting to tensor
+    image = transforms.Resize((96, 96))(pil_image)
+    image = transforms.ToTensor()(image)
+
+    # Perform inference
+    model.eval()
+    with torch.no_grad():
+        output = model(image)
+    
+    # Apply softmax to get probabilities
+    probabilities = F.softmax(output, dim=1)
+
+    # return the probabilities as a numpy array
+    # assert the sum is within 1e-5 of 1
+    assert np.abs(probabilities.sum().item() - 1) < 1e-5, "Probabilities do not sum to 1"
+
+    return probabilities
+
 
 if __name__ == "__main__":
     # Run training for each downsampling factor

@@ -1,5 +1,6 @@
 import os
 from tqdm import tqdm
+from train import model_create
 
 data_dir = "/media/hdd3/neo/results_dir"
 
@@ -73,3 +74,8 @@ for result_dir_path in tqdm(all_result_dir_paths, desc="Filtering out error dirs
 print(f"Number of error directories: {num_errors} among {num_dirs} directories.")
 print(f"Number of non-error directories: {len(non_error_dirs)}")
 print(f"Number of cell image paths: {len(all_cell_paths)}")
+
+# randomly select 1000 images from all_cell_paths
+
+model_path = "/media/hdd1/neo/MODELS/2024-07-11 Frog Softmax Epochs=50/1/version_0/checkpoints/epoch=49-step=1400.ckpt"
+model = model_create(path=model_path)
