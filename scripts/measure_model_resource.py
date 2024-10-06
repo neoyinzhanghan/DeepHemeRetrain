@@ -4,15 +4,15 @@ import random
 from PIL import Image
 from tqdm import tqdm
 import psutil
-import GPUtil
+import torch
 from train import model_create, model_predict
 
 data_dir = "/media/hdd3/neo/results_dir"
 
-# get the list of all subdirectories in the data directory
+# Get the list of all subdirectories in the data directory
 all_subdirs = [d for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d))]
 
-# only keep the ones that start with BMA and PBS
+# Only keep the ones that start with BMA and PBS
 result_dirs = [d for d in all_subdirs if "BMA-diff" in d or "PBS-diff" in d]
 
 all_result_dir_paths = [os.path.join(data_dir, d) for d in result_dirs]
@@ -59,7 +59,7 @@ print(f"Number of non-error directories: {len(non_error_dirs)}")
 print(f"Number of cell image paths: {len(all_cell_paths)}")
 
 # Randomly select 100 images from all_cell_paths
-randomly_selected_img_paths = random.sample(all_cell_paths, 1000)
+randomly_selected_img_paths = random.sample(all_cell_paths, 10000)
 
 model_path = "/media/hdd3/neo/MODELS/2024-06-11  DeepHemeRetrain non-frog feature deploy/1/version_0/checkpoints/epoch=499-step=27500.ckpt"
 model = model_create(path=model_path)
@@ -67,26 +67,25 @@ model = model_create(path=model_path)
 # Memory tracking variables
 cpu_memory_used = []
 gpu_memory_used = []
-gpu = GPUtil.getGPUs()[0]  # Assuming you have one GPU
+process = psutil.Process(os.getpid())  # Get the current process
 
 start_time = time.time()
 
 for image_path in tqdm(randomly_selected_img_paths, desc="Predicting on randomly selected images:"):
-    # Record memory usage before inference
-    cpu_mem_before = psutil.virtual_memory().used
-    gpu_mem_before = gpu.memoryUsed
-
     img = Image.open(image_path).convert("RGB")
     
+    # Track GPU memory usage before inference
+    gpu_mem_before = torch.cuda.memory_allocated()
+
+    # Perform inference
     model_predict(model, img)
     
-    # Record memory usage after inference
-    cpu_mem_after = psutil.virtual_memory().used
-    gpu_mem_after = gpu.memoryUsed
+    # Track GPU memory usage after inference
+    gpu_mem_after = torch.cuda.memory_allocated()
     
-    # Calculate memory usage for this image
-    cpu_memory_used.append(cpu_mem_after - cpu_mem_before)
-    gpu_memory_used.append(gpu_mem_after - gpu_mem_before)
+    # Append memory usage to tracking lists
+    cpu_memory_used.append(process.memory_info().rss)  # Resident Set Size (RSS) memory in bytes
+    gpu_memory_used.append(gpu_mem_after - gpu_mem_before)  # GPU memory used for this inference
 
 end_time = time.time()
 
@@ -98,6 +97,6 @@ peak_gpu_mem_usage = max(gpu_memory_used)
 
 print(f"Average CPU memory used per image: {avg_cpu_mem_usage / (1024 * 1024)} MB")
 print(f"Peak CPU memory used: {peak_cpu_mem_usage / (1024 * 1024)} MB")
-print(f"Average GPU memory used per image: {avg_gpu_mem_usage} MB")
-print(f"Peak GPU memory used: {peak_gpu_mem_usage} MB")
+print(f"Average GPU memory used per image: {avg_gpu_mem_usage / (1024 * 1024)} MB")
+print(f"Peak GPU memory used: {peak_gpu_mem_usage / (1024 * 1024)} MB")
 print(f"Total time taken for inference: {end_time - start_time} seconds")
