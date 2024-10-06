@@ -86,4 +86,4 @@ model = model_create(path=model_path)
 for image_path in tqdm(randomly_selected_img_paths, desc="Predicting on randomly selected images:"):
     img = Image.open(image_path).convert("RGB")
 
-    model_predict(img, model)
+    model_predict(model, img)
