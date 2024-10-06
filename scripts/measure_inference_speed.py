@@ -1,4 +1,5 @@
 import os
+import time
 import random
 from PIL import Image
 from tqdm import tqdm
@@ -83,7 +84,11 @@ randomly_selected_img_paths = random.sample(all_cell_paths, 100)
 model_path = "/media/hdd3/neo/MODELS/2024-06-11  DeepHemeRetrain non-frog feature deploy/1/version_0/checkpoints/epoch=499-step=27500.ckpt"
 model = model_create(path=model_path)
 
+start_time = time.time()
+
 for image_path in tqdm(randomly_selected_img_paths, desc="Predicting on randomly selected images:"):
     img = Image.open(image_path).convert("RGB")
 
     model_predict(model, img)
+
+end_time = time.time()
