@@ -1,6 +1,8 @@
 import os
+import random
+from PIL import Image
 from tqdm import tqdm
-from train import model_create
+from train import model_create, model_predict
 
 data_dir = "/media/hdd3/neo/results_dir"
 
@@ -76,6 +78,12 @@ print(f"Number of non-error directories: {len(non_error_dirs)}")
 print(f"Number of cell image paths: {len(all_cell_paths)}")
 
 # randomly select 1000 images from all_cell_paths
+randomly_selected_img_paths = random.sample(all_cell_paths, 1000)
 
 model_path = "/media/hdd1/neo/MODELS/2024-07-11 Frog Softmax Epochs=50/1/version_0/checkpoints/epoch=49-step=1400.ckpt"
 model = model_create(path=model_path)
+
+for image_path in tqdm(randomly_selected_img_paths, desc="Predicting on randomly selected images:"):
+    img = Image.open(image_path).convert("RGB")
+
+    model_predict(img, model)

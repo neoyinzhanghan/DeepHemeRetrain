@@ -382,10 +382,17 @@ def model_predict(model, pil_image):
     # Perform inference
     model.eval()
     with torch.no_grad():
+
+        # make sure both model and image are on the cuda device
+        model.to("cuda")
+        image = image.to("cuda")
         output = model(image)
     
     # Apply softmax to get probabilities
     probabilities = F.softmax(output, dim=1)
+
+    # move the probabilities to the cpu
+    probabilities = probabilities.cpu().numpy()
 
     # return the probabilities as a numpy array
     # assert the sum is within 1e-5 of 1
