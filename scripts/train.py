@@ -379,6 +379,9 @@ def model_predict(model, pil_image):
     image = transforms.Resize((96, 96))(pil_image)
     image = transforms.ToTensor()(image)
 
+    # add a batch dimension
+    image = image.unsqueeze(0)
+
     # Perform inference
     model.eval()
     with torch.no_grad():
@@ -390,6 +393,9 @@ def model_predict(model, pil_image):
     
     # Apply softmax to get probabilities
     probabilities = F.softmax(output, dim=1)
+
+    # remove the batch dimension
+    probabilities = probabilities.squeeze(0)
 
     # move the probabilities to the cpu
     probabilities = probabilities.cpu().numpy()
