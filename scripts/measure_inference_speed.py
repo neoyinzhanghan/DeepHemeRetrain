@@ -77,8 +77,8 @@ print(f"Number of error directories: {num_errors} among {num_dirs} directories."
 print(f"Number of non-error directories: {len(non_error_dirs)}")
 print(f"Number of cell image paths: {len(all_cell_paths)}")
 
-# randomly select 1000 images from all_cell_paths
-randomly_selected_img_paths = random.sample(all_cell_paths, 1000)
+# randomly select 100 images from all_cell_paths
+randomly_selected_img_paths = random.sample(all_cell_paths, 100)
 
 model_path = "/media/hdd1/neo/MODELS/2024-07-11 Frog Softmax Epochs=50/1/version_0/checkpoints/epoch=49-step=1400.ckpt"
 model = model_create(path=model_path)
