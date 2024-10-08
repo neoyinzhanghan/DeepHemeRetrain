@@ -125,7 +125,7 @@ print(f"Number of non-error directories: {len(non_error_dirs)}")
 print(f"Number of cell image paths: {len(all_cell_paths)}")
 
 # randomly select 100 images from all_cell_paths
-randomly_selected_img_paths = random.sample(all_cell_paths, 100000)
+randomly_selected_img_paths = random.sample(all_cell_paths, 10000)
 
 model_path = "/media/hdd3/neo/MODELS/2024-06-11  DeepHemeRetrain non-frog feature deploy/1/version_0/checkpoints/epoch=499-step=27500.ckpt"
 model = model_create(path=model_path)
