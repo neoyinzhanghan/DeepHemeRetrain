@@ -5,7 +5,7 @@ from PIL import Image
 from tqdm import tqdm
 import psutil
 import torch
-from train_frog import model_create, model_predict
+from train import model_create, model_predict
 
 data_dir = "/media/hdd3/neo/results_dir"
 
