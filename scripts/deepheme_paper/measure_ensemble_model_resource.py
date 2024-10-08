@@ -104,30 +104,27 @@ start_time = time.time()
 for image_path in tqdm(
     randomly_selected_img_paths, desc="Predicting on randomly selected images:"
 ):
-
     img = Image.open(image_path).convert("RGB")
 
-    # Track GPU memory usage before inference
-    gpu_mem_before = torch.cuda.memory_allocated()
+    # Reset the GPU memory peak tracker before inference
+    torch.cuda.reset_max_memory_allocated()
 
-    # Perform inference
+    # Perform inference and collect predictions
     predictions = []
     for i in range(5):
         predictions.append(model_predict(model, img))
 
-    # calculate the average prediction
+    # Calculate the average prediction
     avg_prediction = sum(predictions) / len(predictions)
 
     # Track GPU memory usage after inference
-    gpu_mem_after = torch.cuda.memory_allocated()
+    gpu_mem_max = torch.cuda.max_memory_allocated()
 
     # Append memory usage to tracking lists
     cpu_memory_used.append(
         process.memory_info().rss
     )  # Resident Set Size (RSS) memory in bytes
-    gpu_memory_used.append(
-        gpu_mem_after - gpu_mem_before
-    )  # GPU memory used for this inference
+    gpu_memory_used.append(gpu_mem_max)  # Peak GPU memory used for this inference
 
 end_time = time.time()
 
