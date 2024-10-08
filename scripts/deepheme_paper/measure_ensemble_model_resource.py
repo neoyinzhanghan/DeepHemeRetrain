@@ -10,7 +10,9 @@ from train_frog import model_create, model_predict
 data_dir = "/media/hdd3/neo/results_dir"
 
 # Get the list of all subdirectories in the data directory
-all_subdirs = [d for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d))]
+all_subdirs = [
+    d for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d))
+]
 
 # Only keep the ones that start with BMA and PBS
 result_dirs = [d for d in all_subdirs if "BMA-diff" in d or "PBS-diff" in d]
@@ -18,15 +20,38 @@ result_dirs = [d for d in all_subdirs if "BMA-diff" in d or "PBS-diff" in d]
 all_result_dir_paths = [os.path.join(data_dir, d) for d in result_dirs]
 
 cellnames = [
-    "B1", "B2", "E1", "E4", "ER1", "ER2", "ER3", "ER4", "ER5", "ER6", 
-    "L2", "L4", "M1", "M2", "M3", "M4", "M5", "M6", "MO2", "PL2", 
-    "PL3", "U1", "U4"
+    "B1",
+    "B2",
+    "E1",
+    "E4",
+    "ER1",
+    "ER2",
+    "ER3",
+    "ER4",
+    "ER5",
+    "ER6",
+    "L2",
+    "L4",
+    "M1",
+    "M2",
+    "M3",
+    "M4",
+    "M5",
+    "M6",
+    "MO2",
+    "PL2",
+    "PL3",
+    "U1",
+    "U4",
 ]
+
 
 def get_all_cell_paths(result_dir_path):
     # Get all subdirectories of result_dir_path/cells
     cell_dir = os.path.join(result_dir_path, "cells")
-    all_cells = [d for d in os.listdir(cell_dir) if os.path.isdir(os.path.join(cell_dir, d))]
+    all_cells = [
+        d for d in os.listdir(cell_dir) if os.path.isdir(os.path.join(cell_dir, d))
+    ]
 
     # Only keep the ones that are in cellnames
     cell_paths = [os.path.join(cell_dir, d) for d in all_cells if d in cellnames]
@@ -35,10 +60,15 @@ def get_all_cell_paths(result_dir_path):
 
     # Get all image paths in each cell path
     for cell_path in cell_paths:
-        img_paths = [os.path.join(cell_path, f) for f in os.listdir(cell_path) if f.endswith(".jpg")]
+        img_paths = [
+            os.path.join(cell_path, f)
+            for f in os.listdir(cell_path)
+            if f.endswith(".jpg")
+        ]
         all_cell_img_paths.extend(img_paths)
 
     return all_cell_img_paths
+
 
 num_errors = 0
 num_dirs = len(all_result_dir_paths)
@@ -71,22 +101,33 @@ process = psutil.Process(os.getpid())  # Get the current process
 
 start_time = time.time()
 
-for image_path in tqdm(randomly_selected_img_paths, desc="Predicting on randomly selected images:"):
+for image_path in tqdm(
+    randomly_selected_img_paths, desc="Predicting on randomly selected images:"
+):
 
     img = Image.open(image_path).convert("RGB")
-    
+
     # Track GPU memory usage before inference
     gpu_mem_before = torch.cuda.memory_allocated()
 
     # Perform inference
-    model_predict(model, img)
-    
+    predictions = []
+    for i in range(5):
+        predictions.append(model_predict(model, img))
+
+    # calculate the average prediction
+    avg_prediction = sum(predictions) / len(predictions)
+
     # Track GPU memory usage after inference
     gpu_mem_after = torch.cuda.memory_allocated()
-    
+
     # Append memory usage to tracking lists
-    cpu_memory_used.append(process.memory_info().rss)  # Resident Set Size (RSS) memory in bytes
-    gpu_memory_used.append(gpu_mem_after - gpu_mem_before)  # GPU memory used for this inference
+    cpu_memory_used.append(
+        process.memory_info().rss
+    )  # Resident Set Size (RSS) memory in bytes
+    gpu_memory_used.append(
+        gpu_mem_after - gpu_mem_before
+    )  # GPU memory used for this inference
 
 end_time = time.time()
 

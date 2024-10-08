@@ -8,7 +8,9 @@ from train_frog import model_create, model_predict
 data_dir = "/media/hdd3/neo/results_dir"
 
 # get the list of all subdirectories in the data directory
-all_subdirs = [d for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d))]
+all_subdirs = [
+    d for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d))
+]
 
 # onlu keep the one that starts with BMA and PBS
 result_dirs = [d for d in all_subdirs if "BMA-diff" in d or "PBS-diff" in d]
@@ -41,10 +43,13 @@ cellnames = [
     "U4",
 ]
 
+
 def get_all_cell_paths(result_dir_path):
     # first get all the subdirectories of result_dir_path/cells
     cell_dir = os.path.join(result_dir_path, "cells")
-    all_cells = [d for d in os.listdir(cell_dir) if os.path.isdir(os.path.join(cell_dir, d))]
+    all_cells = [
+        d for d in os.listdir(cell_dir) if os.path.isdir(os.path.join(cell_dir, d))
+    ]
 
     # only keep the ones that are in cellnames
     cell_paths = [os.path.join(cell_dir, d) for d in all_cells if d in cellnames]
@@ -53,7 +58,11 @@ def get_all_cell_paths(result_dir_path):
 
     # get all the image paths in each cell path
     for cell_path in cell_paths:
-        img_paths = [os.path.join(cell_path, f) for f in os.listdir(cell_path) if f.endswith(".jpg")]
+        img_paths = [
+            os.path.join(cell_path, f)
+            for f in os.listdir(cell_path)
+            if f.endswith(".jpg")
+        ]
         all_cell_img_paths.extend(img_paths)
 
     return all_cell_img_paths
@@ -84,13 +93,35 @@ randomly_selected_img_paths = random.sample(all_cell_paths, 1000)
 model_path = "/media/hdd3/neo/MODELS/2024-06-11  DeepHemeRetrain non-frog feature deploy/1/version_0/checkpoints/epoch=499-step=27500.ckpt"
 model = model_create(path=model_path)
 
-start_time = time.time()
+image_loading_time = 0
+image_prediction_time = 0
 
-for image_path in tqdm(randomly_selected_img_paths, desc="Predicting on randomly selected images:"):
+for image_path in tqdm(
+    randomly_selected_img_paths, desc="Predicting on randomly selected images:"
+):
+
+    start_time = time.time()
     img = Image.open(image_path).convert("RGB")
+    end_time = time.time()
+    image_loading_time += end_time - start_time
 
-    model_predict(model, img)
+    start_time = time.time()
+    # Perform inference
+    predictions = []
+    for i in range(5):
+        predictions.append(model_predict(model, img))
+        # calculate the average prediction
+    avg_prediction = sum(predictions) / len(predictions)
+    end_time = time.time()
+    image_prediction_time += end_time - start_time
+
 
 end_time = time.time()
 
-print(f"Time taken to predict on 1000 images: {end_time - start_time} seconds.")
+print(f"Total number of images: {len(randomly_selected_img_paths)}")
+print(
+    f"Average image loading time: {image_loading_time / len(randomly_selected_img_paths)}"
+)
+print(
+    f"Average image prediction time: {image_prediction_time / len(randomly_selected_img_paths)}"
+)
