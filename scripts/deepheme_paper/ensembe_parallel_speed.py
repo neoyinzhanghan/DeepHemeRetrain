@@ -131,7 +131,11 @@ model_path = "/media/hdd3/neo/MODELS/2024-06-11  DeepHemeRetrain non-frog featur
 model = model_create(path=model_path)
 
 start_time = time.time()
-all_pil_images = [Image.open(img_path) for img_path in randomly_selected_img_paths]
+all_pil_images = []
+
+for img_path in tqdm(randomly_selected_img_paths, desc="Loading Images:"):
+    img = Image.open(img_path)
+    all_pil_images.append(img)
 
 all_pil_images_batches = create_list_of_batches_from_list(all_pil_images, 100)
 
