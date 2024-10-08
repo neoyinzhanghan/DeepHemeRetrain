@@ -406,6 +406,36 @@ def model_predict(model, pil_image):
 
     return probabilities
 
+def model_predict_batch(model, pil_images):
+    """
+    Perform inference using the given model on a batch of provided images.
+    Returns the batched stacked softmax probabilities.
+    """
+    # Preprocess the images: resize and convert to tensor, then stack into a batch
+    images = [transforms.Resize((96, 96))(img) for img in pil_images]
+    images = [transforms.ToTensor()(img) for img in images]
+    images = torch.stack(images)  # Creates a batch of images
+
+    # Perform inference
+    model.eval()
+    with torch.no_grad():
+        # Make sure both model and images are on the CUDA device
+        model.to("cuda")
+        images = images.to("cuda")
+        output = model(images)
+    
+    # Apply softmax to get probabilities
+    probabilities = F.softmax(output, dim=1)
+
+    # Move the probabilities to the CPU and convert to numpy
+    probabilities = probabilities.cpu().numpy()
+
+    # Assert that the sum of probabilities for each image is approximately 1
+    assert np.allclose(probabilities.sum(axis=1), 1, atol=1e-5), "Probabilities do not sum to 1"
+
+    return probabilities
+
+
 
 if __name__ == "__main__":
     # Run training for each downsampling factor
