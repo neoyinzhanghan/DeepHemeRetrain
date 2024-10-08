@@ -2,7 +2,7 @@ import ray
 from train import model_create, model_predict, model_predict_batch
 
 
-@ray.remote
+@ray.remote(num_gpu=1)
 class EnsembleManager:
     """Manages the ensemble of models.
 
