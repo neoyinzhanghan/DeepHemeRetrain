@@ -13,6 +13,33 @@ os.makedirs(os.path.join(new_data_dir, "train"), exist_ok=True)
 os.makedirs(os.path.join(new_data_dir, "val"), exist_ok=True)
 os.makedirs(os.path.join(new_data_dir, "test"), exist_ok=True)
 
+
+cellnames = [
+    "B1",
+    "B2",
+    "E1",
+    "E4",
+    "ER1",
+    "ER2",
+    "ER3",
+    "ER4",
+    "ER5",
+    "ER6",
+    "L2",
+    "L4",
+    "M1",
+    "M2",
+    "M3",
+    "M4",
+    "M5",
+    "M6",
+    "MO2",
+    "PL2",
+    "PL3",
+    "U1",
+    "U4",
+]
+
 metadata = pandas.read_csv(original_metadata_dir)
 
 train_prob = 0.9
@@ -40,6 +67,11 @@ for idx, row in tqdm(metadata.iterrows(), total=len(metadata)):
 
     # get the immediate parent directory name
     cell_class = os.path.basename(os.path.dirname(record_path))
+
+    if not cell_class in cellnames:
+        continue
+
+    
     image_name = f"{idx}.jpg"
     image_path = os.path.join(original_data_dir, split, cell_class, image_name)
 
