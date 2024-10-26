@@ -1,6 +1,7 @@
 import os
 import pandas
 import random
+import shutil
 from tqdm import tqdm
 
 original_data_dir = "/media/hdd3/neo/pooled_deepheme_data"
@@ -60,7 +61,7 @@ for idx, row in tqdm(metadata.iterrows(), total=len(metadata)):
     # copy the image to the new directory under the new split
     new_image_path = os.path.join(new_data_dir, new_split, cell_class, image_name)
 
-    os.system(f"cp \"{image_path}\" \"{new_image_path}\"")
+    shutil.copy(image_path, new_image_path)
 
     new_metadata_dict["original_path"].append(record_path)
     new_metadata_dict["old_image_path"].append(image_path)
