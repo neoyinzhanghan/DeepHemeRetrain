@@ -21,7 +21,7 @@ from dataset import CustomDataset
 
 num_epochs = 500
 default_config = {"lr": 3.56e-05}  # 1.462801279401232e-06}
-base_data_dir = "/media/hdd3/neo/pooled_deepheme_data_MSK_to_USCF"
+base_data_dir = "/media/hdd3/neo/pooled_deepheme_data_MSK_to_UCSF"
 num_gpus = 2
 num_workers = 64
 downsample_factor = 1
