@@ -59,7 +59,7 @@ for idx, row in tqdm(metadata.iterrows(), total=len(metadata)):
         new_split = "test"
 
     # copy the image to the new directory under the new split
-    new_image_path = os.path.join(new_data_dir, new_split, cell_class, image_name)
+    new_image_path = os.path.join(new_data_dir, new_split, cell_class)
 
     shutil.copy(image_path, new_image_path)
 
