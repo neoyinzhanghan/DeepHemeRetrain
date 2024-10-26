@@ -29,17 +29,37 @@ batch_size = 256
 img_size = 96
 num_classes = 23
 
-results_dirs_list = [
-    "/media/hdd3/neo/AML_bma",
-    "/media/hdd3/neo/b-all_bma",
-    "/media/hdd3/neo/lpl_bma",
-    "/media/hdd3/neo/myeloma_bma",
+results_dirs_list = []
+
+cell_types_list = [
+    "B1",
+    "B2",
+    "E1",
+    "E4",
+    "ER1",
+    "ER2",
+    "ER3",
+    "ER4",
+    "ER5",
+    "ER6",
+    "L2",
+    "L4",
+    "M1",
+    "M2",
+    "M3",
+    "M4",
+    "M5",
+    "M6",
+    "MO2",
+    "PL2",
+    "PL3",
+    "U1",
+    "U4",
 ]
 
-cell_types_list = ["M1", "M1", "L4", "L4"]
 
 base_data_sample_probability = 0.5
-sample_probabilities = [0.125, 0.125, 0.125, 0.125]
+sample_probabilities = []
 
 ############################################################################
 ####### FUNCTIONS FOR DATA AUGMENTATION AND DATA LOADING ###################
@@ -369,6 +389,7 @@ def model_create(path, num_classes=23):
     model = Myresnext50.load_from_checkpoint(path)
     return model
 
+
 def model_predict(model, pil_image):
     """
     Perform inference using the given model on the provided image.
@@ -390,7 +411,7 @@ def model_predict(model, pil_image):
         model.to("cuda")
         image = image.to("cuda")
         output = model(image)
-    
+
     # Apply softmax to get probabilities
     probabilities = F.softmax(output, dim=1)
 
@@ -402,9 +423,12 @@ def model_predict(model, pil_image):
 
     # return the probabilities as a numpy array
     # assert the sum is within 1e-5 of 1
-    assert np.abs(probabilities.sum().item() - 1) < 1e-5, "Probabilities do not sum to 1"
+    assert (
+        np.abs(probabilities.sum().item() - 1) < 1e-5
+    ), "Probabilities do not sum to 1"
 
     return probabilities
+
 
 def model_predict_batch(model, pil_images):
     """
@@ -423,7 +447,7 @@ def model_predict_batch(model, pil_images):
         model.to("cuda")
         images = images.to("cuda")
         output = model(images)
-    
+
     # Apply softmax to get probabilities
     probabilities = F.softmax(output, dim=1)
 
@@ -431,10 +455,11 @@ def model_predict_batch(model, pil_images):
     probabilities = probabilities.cpu().numpy()
 
     # Assert that the sum of probabilities for each image is approximately 1
-    assert np.allclose(probabilities.sum(axis=1), 1, atol=1e-5), "Probabilities do not sum to 1"
+    assert np.allclose(
+        probabilities.sum(axis=1), 1, atol=1e-5
+    ), "Probabilities do not sum to 1"
 
     return probabilities
-
 
 
 if __name__ == "__main__":
