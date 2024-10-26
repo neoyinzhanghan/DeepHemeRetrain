@@ -58,7 +58,7 @@ cell_types_list = [
 ]
 
 
-base_data_sample_probability = 0.5
+base_data_sample_probability = 1
 sample_probabilities = []
 
 ############################################################################
