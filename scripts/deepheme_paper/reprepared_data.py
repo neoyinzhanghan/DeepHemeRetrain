@@ -40,6 +40,11 @@ cellnames = [
     "U4",
 ]
 
+for cellname in cellnames:
+    os.makedirs(os.path.join(new_data_dir, "train", cellname), exist_ok=True)
+    os.makedirs(os.path.join(new_data_dir, "val", cellname), exist_ok=True)
+    os.makedirs(os.path.join(new_data_dir, "test", cellname), exist_ok=True)
+
 metadata = pandas.read_csv(original_metadata_dir)
 
 train_prob = 0.9
@@ -71,7 +76,6 @@ for idx, row in tqdm(metadata.iterrows(), total=len(metadata)):
     if not cell_class in cellnames:
         continue
 
-    
     image_name = f"{idx}.jpg"
     image_path = os.path.join(original_data_dir, split, cell_class, image_name)
 
