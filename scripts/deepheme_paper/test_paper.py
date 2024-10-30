@@ -3,14 +3,14 @@ import torch
 import pytorch_lightning as pl
 import pandas as pd
 from torchvision import transforms, datasets
-from pytorch_lightning.metrics import Precision, Recall, F1Score
+from torchmetrics.classification import Precision, Recall, F1Score
 from torch.utils.data import DataLoader
 
 from your_training_script import Myresnext50, ImageDataModule  # Replace with the name of your training script
 
 # Set up hyperparameters and data paths
 data_dir = "/media/hdd3/neo/pooled_deepheme_data"
-checkpoint_path = "/home/greg/Documents/neo/DeepHemeRetrain/lightning_logs/1/version_0/checkpoints/epoch=499-step=21000.ckpt"  # Set your checkpoint path here
+checkpoint_path = "path/to/your_checkpoint.ckpt"  # Set your checkpoint path here
 batch_size = 512
 num_classes = 23
 num_workers = 36
