@@ -20,7 +20,7 @@ from torch.utils.data import WeightedRandomSampler
 
 num_epochs = 500
 default_config = {"lr": 3.56e-05}
-data_dir = "/media/hdd1/neo/pooled_deepheme_data"
+data_dir = "/media/hdd3/neo/pooled_deepheme_data"
 num_gpus = 2
 num_workers = 36
 downsample_factor = 1
