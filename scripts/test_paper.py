@@ -6,7 +6,10 @@ from torchvision import transforms, datasets
 from torchmetrics.classification import Precision, Recall, F1Score
 from torch.utils.data import DataLoader
 
-from train_frog import Myresnext50, ImageDataModule  # Replace with the name of your training script
+from train_frog import (
+    Myresnext50,
+    ImageDataModule,
+)  # Replace with the name of your training script
 
 # Set up hyperparameters and data paths
 data_dir = "/media/hdd3/neo/pooled_deepheme_data"
@@ -15,6 +18,7 @@ batch_size = 512
 num_classes = 23
 num_workers = 36
 downsample_factor = 1  # Set as per your requirements
+
 
 # Define a function to perform testing and save results to CSV
 def test_model(checkpoint_path):
@@ -31,9 +35,13 @@ def test_model(checkpoint_path):
     model.to("cuda")  # Move the model to the GPU
 
     # Metrics
-    precision = Precision(num_classes=num_classes, average=None).to("cuda")
-    recall = Recall(num_classes=num_classes, average=None).to("cuda")
-    f1_score = F1Score(num_classes=num_classes, average=None).to("cuda")
+    precision = Precision(num_classes=num_classes, average=None, task="multiclass").to(
+        "cuda"
+    )
+    recall = Recall(num_classes=num_classes, average=None, task="multiclass").to("cuda")
+    f1_score = F1Score(num_classes=num_classes, average=None, task="multiclass").to(
+        "cuda"
+    )
 
     # Dataloader for testing
     test_loader = data_module.test_dataloader()
@@ -62,15 +70,18 @@ def test_model(checkpoint_path):
     f1_values = f1_score(all_preds, all_labels).cpu().numpy()
 
     # Save metrics to CSV
-    metrics_df = pd.DataFrame({
-        "Class": list(range(num_classes)),
-        "Precision": precision_values,
-        "Recall": recall_values,
-        "F1-Score": f1_values
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Class": list(range(num_classes)),
+            "Precision": precision_values,
+            "Recall": recall_values,
+            "F1-Score": f1_values,
+        }
+    )
 
     metrics_df.to_csv("test_metrics.csv", index=False)
     print("Test metrics saved to 'test_metrics.csv'")
+
 
 if __name__ == "__main__":
     test_model(checkpoint_path)
