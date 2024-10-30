@@ -371,7 +371,7 @@ def model_predict(model, pil_image):
         model.to("cuda")
         image = image.to("cuda")
         output = model(image)
-    
+
     # Apply softmax to get probabilities
     probabilities = F.softmax(output, dim=1)
 
@@ -383,7 +383,9 @@ def model_predict(model, pil_image):
 
     # return the probabilities as a numpy array
     # assert the sum is within 1e-5 of 1
-    assert np.abs(probabilities.sum().item() - 1) < 1e-5, "Probabilities do not sum to 1"
+    assert (
+        np.abs(probabilities.sum().item() - 1) < 1e-5
+    ), "Probabilities do not sum to 1"
 
     return probabilities
 

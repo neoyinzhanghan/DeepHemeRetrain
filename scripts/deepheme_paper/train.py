@@ -369,6 +369,7 @@ def model_create(path, num_classes=23):
     model = Myresnext50.load_from_checkpoint(path)
     return model
 
+
 def model_predict(model, pil_image):
     """
     Perform inference using the given model on the provided image.
@@ -390,7 +391,7 @@ def model_predict(model, pil_image):
         model.to("cuda")
         image = image.to("cuda")
         output = model(image)
-    
+
     # Apply softmax to get probabilities
     probabilities = F.softmax(output, dim=1)
 
@@ -402,9 +403,12 @@ def model_predict(model, pil_image):
 
     # return the probabilities as a numpy array
     # assert the sum is within 1e-5 of 1
-    assert np.abs(probabilities.sum().item() - 1) < 1e-5, "Probabilities do not sum to 1"
+    assert (
+        np.abs(probabilities.sum().item() - 1) < 1e-5
+    ), "Probabilities do not sum to 1"
 
     return probabilities
+
 
 def model_predict_batch(model, pil_images):
     """
@@ -423,7 +427,7 @@ def model_predict_batch(model, pil_images):
         model.to("cuda")
         images = images.to("cuda")
         output = model(images)
-    
+
     # Apply softmax to get probabilities
     probabilities = F.softmax(output, dim=1)
 
@@ -431,10 +435,11 @@ def model_predict_batch(model, pil_images):
     probabilities = probabilities.cpu().numpy()
 
     # Assert that the sum of probabilities for each image is approximately 1
-    assert np.allclose(probabilities.sum(axis=1), 1, atol=1e-5), "Probabilities do not sum to 1"
+    assert np.allclose(
+        probabilities.sum(axis=1), 1, atol=1e-5
+    ), "Probabilities do not sum to 1"
 
     return probabilities
-
 
 
 if __name__ == "__main__":
