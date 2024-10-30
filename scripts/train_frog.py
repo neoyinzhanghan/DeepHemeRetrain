@@ -114,6 +114,8 @@ class ImageDataModule(pl.LightningDataModule):
             ]
         )
 
+        self.setup()
+
     def setup(self, stage=None):
         # Load train, validation and test datasets
         train_dataset = datasets.ImageFolder(
