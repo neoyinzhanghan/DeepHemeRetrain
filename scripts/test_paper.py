@@ -3,7 +3,7 @@ import torch
 import pytorch_lightning as pl
 import pandas as pd
 from torchvision import transforms, datasets
-from torchmetrics.classification import Precision, Recall, F1Score
+from torchmetrics.classification import Precision, Recall, F1Score, AUROC
 from torch.utils.data import DataLoader
 
 cellnames = [
@@ -68,12 +68,14 @@ def test_model(checkpoint_path):
     f1_score = F1Score(num_classes=num_classes, average=None, task="multiclass").to(
         "cuda"
     )
+    auc = AUROC(num_classes=num_classes, average=None, task="multiclass").to("cuda")
 
     # Dataloader for testing
     test_loader = data_module.test_dataloader()
 
     all_preds = []
     all_labels = []
+    all_probs = []
 
     with torch.no_grad():
         for batch in test_loader:
@@ -81,19 +83,23 @@ def test_model(checkpoint_path):
             images, labels = images.to("cuda"), labels.to("cuda")
 
             outputs = model(images)
+            probs = torch.softmax(outputs, dim=1)  # Get probabilities for AUC
             preds = torch.argmax(outputs, dim=1)
 
             all_preds.append(preds)
             all_labels.append(labels)
+            all_probs.append(probs)
 
-    # Concatenate all predictions and labels
+    # Concatenate all predictions, labels, and probabilities
     all_preds = torch.cat(all_preds)
     all_labels = torch.cat(all_labels)
+    all_probs = torch.cat(all_probs)
 
     # Compute metrics
     precision_values = precision(all_preds, all_labels).cpu().numpy()
     recall_values = recall(all_preds, all_labels).cpu().numpy()
     f1_values = f1_score(all_preds, all_labels).cpu().numpy()
+    auc_values = auc(all_probs, all_labels).cpu().numpy()
 
     # Save metrics to CSV
     metrics_df = pd.DataFrame(
@@ -102,6 +108,7 @@ def test_model(checkpoint_path):
             "Precision": precision_values,
             "Recall": recall_values,
             "F1-Score": f1_values,
+            "AUC": auc_values,
         }
     )
 
