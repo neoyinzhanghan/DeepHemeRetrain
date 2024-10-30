@@ -10,7 +10,7 @@ from train_frog import Myresnext50, ImageDataModule  # Replace with the name of 
 
 # Set up hyperparameters and data paths
 data_dir = "/media/hdd3/neo/pooled_deepheme_data"
-checkpoint_path = "path/to/your_checkpoint.ckpt"  # Set your checkpoint path here
+checkpoint_path = "/home/greg/Documents/neo/DeepHemeRetrain/lightning_logs/1/version_0/checkpoints/epoch=499-step=21000.ckpt"  # Set your checkpoint path here
 batch_size = 512
 num_classes = 23
 num_workers = 36
