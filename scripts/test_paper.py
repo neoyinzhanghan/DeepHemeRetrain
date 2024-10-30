@@ -6,7 +6,7 @@ from torchvision import transforms, datasets
 from torchmetrics.classification import Precision, Recall, F1Score
 from torch.utils.data import DataLoader
 
-from your_training_script import Myresnext50, ImageDataModule  # Replace with the name of your training script
+from train_frog import Myresnext50, ImageDataModule  # Replace with the name of your training script
 
 # Set up hyperparameters and data paths
 data_dir = "/media/hdd3/neo/pooled_deepheme_data"
