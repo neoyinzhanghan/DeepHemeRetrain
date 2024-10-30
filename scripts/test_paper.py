@@ -6,6 +6,32 @@ from torchvision import transforms, datasets
 from torchmetrics.classification import Precision, Recall, F1Score
 from torch.utils.data import DataLoader
 
+cellnames = [
+    "B1",
+    "B2",
+    "E1",
+    "E4",
+    "ER1",
+    "ER2",
+    "ER3",
+    "ER4",
+    "ER5",
+    "ER6",
+    "L2",
+    "L4",
+    "M1",
+    "M2",
+    "M3",
+    "M4",
+    "M5",
+    "M6",
+    "MO2",
+    "PL2",
+    "PL3",
+    "U1",
+    "U4",
+]
+
 from train_frog import (
     Myresnext50,
     ImageDataModule,
@@ -72,7 +98,7 @@ def test_model(checkpoint_path):
     # Save metrics to CSV
     metrics_df = pd.DataFrame(
         {
-            "Class": list(range(num_classes)),
+            "Class": cellnames,
             "Precision": precision_values,
             "Recall": recall_values,
             "F1-Score": f1_values,
