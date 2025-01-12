@@ -29,18 +29,6 @@ batch_size = 256
 img_size = 96
 num_classes = 10
 
-results_dirs_list = [
-    "/media/hdd3/neo/AML_bma",
-    "/media/hdd3/neo/b-all_bma",
-    "/media/hdd3/neo/lpl_bma",
-    "/media/hdd3/neo/myeloma_bma",
-]
-
-cell_types_list = ["M1", "M1", "L4", "L4"]
-
-base_data_sample_probability = 0.5
-sample_probabilities = [0.125, 0.125, 0.125, 0.125]
-
 ############################################################################
 ####### FUNCTIONS FOR DATA AUGMENTATION AND DATA LOADING ###################
 ############################################################################
@@ -114,38 +102,27 @@ class DownsampledDataset(torch.utils.data.Dataset):
 class ImageDataModule(pl.LightningDataModule):
     def __init__(
         self,
-        base_data_dir,
-        results_dirs_list,
-        cell_types_list,
+        combined_metadata_csv_path,
         batch_size,
         downsample_factor,
     ):
         super().__init__()
-        self.data_dir = base_data_dir
-        self.results_dirs_list = results_dirs_list
-        self.cell_types_list = cell_types_list
+        self.combined_metadata_csv_path = combined_metadata_csv_path
         self.batch_size = batch_size
         self.downsample_factor = downsample_factor
-        self.transform = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                # Additional normalization can be uncommented and adjusted if needed
-                # transforms.Normalize(mean=(0.61070228, 0.54225375, 0.65411311), std=(0.1485182, 0.1786308, 0.12817113))
-            ]
-        )
 
     def setup(self, stage=None):
         # Load base train, validation, and test datasets
         train_dataset = CustomPlasmaCellDataset(
-            combined_metadata_csv_path="/media/hdd3/neo/new_plasma_cell_deepheme_training_metadata.csv",
+            combined_metadata_csv_path=self.combined_metadata_csv_path,
             split="train",
         )
         val_dataset = CustomPlasmaCellDataset(
-            combined_metadata_csv_path="/media/hdd3/neo/new_plasma_cell_deepheme_training_metadata.csv",
+            combined_metadata_csv_path=self.combined_metadata_csv_path,
             split="val",
         )
         test_dataset = CustomPlasmaCellDataset(
-            combined_metadata_csv_path="/media/hdd3/neo/new_plasma_cell_deepheme_training_metadata.csv",
+            combined_metadata_csv_path=self.combined_metadata_csv_path,
             split="test",
         )
 
@@ -273,16 +250,12 @@ class Myresnext50(pl.LightningModule):
 def train_model(
     downsample_factor,
     num_epochs=num_epochs,
-    base_data_dir=base_data_dir,
-    results_dirs_list=results_dirs_list,
-    cell_types_list=cell_types_list,
+    config=default_config,
     batch_size=batch_size,
     num_classes=num_classes,
 ):
     data_module = ImageDataModule(
-        base_data_dir=base_data_dir,
-        results_dirs_list=results_dirs_list,
-        cell_types_list=cell_types_list,
+        combined_metadata_csv_path="/media/hdd3/neo/new_plasma_cell_deepheme_training_metadata.csv",
         batch_size=batch_size,
         downsample_factor=downsample_factor,
     )

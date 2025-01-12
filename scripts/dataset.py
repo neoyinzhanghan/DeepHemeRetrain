@@ -34,6 +34,7 @@ grouped_label_to_index = {
     "erythroid precursors": 7,
     "lymphocytes": 8,
     "plasma cells": 9,
+    "skippocytes": 10,
 }
 
 
