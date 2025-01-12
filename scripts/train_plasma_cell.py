@@ -13,7 +13,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torchvision import transforms, datasets, models
 from torchmetrics import Accuracy, AUROC
 from torch.utils.data import WeightedRandomSampler
-from dataset import CustomDataset
+from dataset import CustomPlasmaCellDataset
 
 ############################################################################
 ####### DEFINE HYPERPARAMETERS AND DATA DIRECTORIES ########################
@@ -136,28 +136,21 @@ class ImageDataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
         # Load base train, validation, and test datasets
-        train_dataset = datasets.ImageFolder(
-            root=os.path.join(self.data_dir, "train"), transform=self.transform
+        train_dataset = CustomPlasmaCellDataset(
+            combined_metadata_csv_path="/media/hdd3/neo/new_plasma_cell_deepheme_training_metadata.csv",
+            split="train",
         )
-        val_dataset = datasets.ImageFolder(
-            root=os.path.join(self.data_dir, "val"), transform=self.transform
+        val_dataset = CustomPlasmaCellDataset(
+            combined_metadata_csv_path="/media/hdd3/neo/new_plasma_cell_deepheme_training_metadata.csv",
+            split="val",
         )
-        test_dataset = datasets.ImageFolder(
-            root=os.path.join(self.data_dir, "test"), transform=self.transform
-        )
-
-        # Prepare the train dataset with CustomDataset and DownsampledDataset
-        combined_train_dataset = CustomDataset(
-            base_data_dir=os.path.join(self.data_dir, "train"),
-            results_dirs_list=self.results_dirs_list,
-            cell_types_list=self.cell_types_list,
-            base_data_sample_probability=0.5,
-            sample_probabilities=[0.125] * len(self.results_dirs_list),
-            transform=self.transform,
+        test_dataset = CustomPlasmaCellDataset(
+            combined_metadata_csv_path="/media/hdd3/neo/new_plasma_cell_deepheme_training_metadata.csv",
+            split="test",
         )
 
         self.train_dataset = DownsampledDataset(
-            combined_train_dataset, self.downsample_factor, apply_augmentation=True
+            train_dataset, self.downsample_factor, apply_augmentation=True
         )
 
         self.val_dataset = DownsampledDataset(
@@ -369,6 +362,7 @@ def model_create(path, num_classes=23):
     model = Myresnext50.load_from_checkpoint(path)
     return model
 
+
 def model_predict(model, pil_image):
     """
     Perform inference using the given model on the provided image.
@@ -390,7 +384,7 @@ def model_predict(model, pil_image):
         model.to("cuda")
         image = image.to("cuda")
         output = model(image)
-    
+
     # Apply softmax to get probabilities
     probabilities = F.softmax(output, dim=1)
 
@@ -402,7 +396,9 @@ def model_predict(model, pil_image):
 
     # return the probabilities as a numpy array
     # assert the sum is within 1e-5 of 1
-    assert np.abs(probabilities.sum().item() - 1) < 1e-5, "Probabilities do not sum to 1"
+    assert (
+        np.abs(probabilities.sum().item() - 1) < 1e-5
+    ), "Probabilities do not sum to 1"
 
     return probabilities
 
