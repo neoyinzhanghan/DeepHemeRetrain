@@ -312,16 +312,55 @@ class CustomPlasmaCellDataset(Dataset):
 
 
 if __name__ == "__main__":
-    base_data_csv = "/media/hdd3/neo/pooled_deepheme_data/metadata.csv"
+    base_data_csv = "/media/hdd3/neo/pooled_deepheme_data/new_metadata.csv"
     plasma_cell_data_dir = "/media/hdd3/neo/PCM_cells_annotated"
     save_path = "/media/hdd3/neo"
 
-    combined_metadata = create_plasma_cell_dataset_metadata(
-        base_data_csv, plasma_cell_data_dir
-    )
+    import os
+    import pandas as pd
+    from pathlib import Path
 
-    # save the combined_metadata to a csv
-    combined_metadata.to_csv(
-        os.path.join(save_path, "new_plasma_cell_deepheme_training_metadata.csv"),
-        index=False,
-    )
+    def create_metadata_csv(root_dir):
+        # Lists to store metadata
+        metadata = []
+        idx = 0
+
+        # Walk through train, test, val directories
+        for split in ["train", "test", "val"]:
+            split_path = os.path.join(root_dir, split)
+
+            # Check if the split directory exists
+            if not os.path.exists(split_path):
+                print(f"Warning: {split} directory not found")
+                continue
+
+            # Walk through all files in the split directory
+            for root, _, files in os.walk(split_path):
+                for file in files:
+                    # Get the full path
+                    file_path = os.path.join(root, file)
+
+                    # Add to metadata
+                    metadata.append(
+                        {"idx": idx, "original_path": file_path, "split": split}
+                    )
+                    idx += 1
+
+        # Create DataFrame and save to CSV
+        df = pd.DataFrame(metadata)
+        df.to_csv("new_metadata.csv", index=False)
+        print(f"Created metadata CSV with {len(df)} entries")
+
+    # Use the function
+    root_dir = "/media/hdd3/neo/pooled_deepheme_data"
+    create_metadata_csv(root_dir)
+
+    # combined_metadata = create_plasma_cell_dataset_metadata(
+    #     base_data_csv, plasma_cell_data_dir
+    # )
+
+    # # save the combined_metadata to a csv
+    # combined_metadata.to_csv(
+    #     os.path.join(save_path, "new_plasma_cell_deepheme_training_metadata.csv"),
+    #     index=False,
+    # )
