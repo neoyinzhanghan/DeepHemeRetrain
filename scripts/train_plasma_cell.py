@@ -160,48 +160,10 @@ class ImageDataModule(pl.LightningDataModule):
             test_dataset, self.downsample_factor, apply_augmentation=False
         )
 
-        # Compute class weights for handling imbalance (for train dataset)
-        class_counts_train = torch.tensor(
-            [t[1] for t in train_dataset.samples]
-        ).bincount()
-        class_weights_train = 1.0 / class_counts_train.float()
-        sample_weights_train = class_weights_train[
-            [t[1] for t in train_dataset.samples]
-        ]
-
-        class_counts_val = torch.tensor([t[1] for t in val_dataset.samples]).bincount()
-        class_weights_val = 1.0 / class_counts_val.float()
-        sample_weights_val = class_weights_val[[t[1] for t in val_dataset.samples]]
-
-        class_counts_test = torch.tensor(
-            [t[1] for t in test_dataset.samples]
-        ).bincount()
-        class_weights_test = 1.0 / class_counts_test.float()
-        sample_weights_test = class_weights_test[[t[1] for t in test_dataset.samples]]
-
-        self.train_sampler = WeightedRandomSampler(
-            weights=sample_weights_train,
-            num_samples=len(sample_weights_train),
-            replacement=True,
-        )
-
-        self.val_sampler = WeightedRandomSampler(
-            weights=sample_weights_val,
-            num_samples=len(sample_weights_val),
-            replacement=True,
-        )
-
-        self.test_sampler = WeightedRandomSampler(
-            weights=sample_weights_test,
-            num_samples=len(sample_weights_test),
-            replacement=True,
-        )
-
     def train_dataloader(self):
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
-            sampler=self.train_sampler,
             num_workers=24,
         )
 
@@ -209,7 +171,6 @@ class ImageDataModule(pl.LightningDataModule):
         return DataLoader(
             self.val_dataset,
             batch_size=self.batch_size,
-            sampler=self.val_sampler,
             num_workers=24,
         )
 
@@ -217,7 +178,6 @@ class ImageDataModule(pl.LightningDataModule):
         return DataLoader(
             self.test_dataset,
             batch_size=self.batch_size,
-            sampler=self.test_sampler,
             num_workers=24,
         )
 
