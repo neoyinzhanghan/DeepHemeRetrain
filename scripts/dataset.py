@@ -308,7 +308,7 @@ class CustomPlasmaCellDataset(Dataset):
             image = self.transform(image)
         # Get label
         grouped_label = cell_metadata["grouped_label"]
-        label_idx = cellnames.index(grouped_label)
+        label_idx = grouped_label_to_index[grouped_label]   
 
         return image, label_idx
 
