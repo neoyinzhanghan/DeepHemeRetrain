@@ -295,7 +295,7 @@ class CustomPlasmaCellDataset(Dataset):
         cell_metadata = self.class_metadata[cell_name].sample(n=1).iloc[0]
 
         # Get image path and load image
-        img_path = cell_metadata["path"]
+        img_path = cell_metadata["original_path"]
         image = Image.open(img_path).convert("RGB")
 
         # Convert to tensor
