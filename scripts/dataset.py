@@ -35,7 +35,11 @@ def create_plasma_cell_dataset_metadata(base_data_csv, plasma_cell_data_dir):
 
     # recursively find all the jpg files in the plasma_cell_data_dir
     print("Finding plasma cell images...")
-    for root, dirs, files in tqdm(os.walk(plasma_cell_data_dir)):
+    for root, dirs, files in tqdm(
+        os.walk(plasma_cell_data_dir),
+        desc="Finding plasma cell images",
+        total=len(os.walk(plasma_cell_data_dir)),
+    ):
         for file in files:
             if file.endswith(".jpg"):
                 plasma_cell_jpgs.append(os.path.join(root, file))
@@ -249,7 +253,7 @@ class CustomPlasmaCellDataset(Dataset):
 if __name__ == "__main__":
     base_data_csv = "/media/hdd3/neo/pooled_deepheme_data/metadata.csv"
     plasma_cell_data_dir = "/media/ssd2/dh_labelled_data/DeepHeme1/UCSF_repo/ER2"
-    save_path = "/media/hdd3/neo"
+    save_path = "/media/hdd3/neo/new_plasma_cell_deepheme_training_metadata"
 
     combined_metadata = create_plasma_cell_dataset_metadata(
         base_data_csv, plasma_cell_data_dir
@@ -257,5 +261,6 @@ if __name__ == "__main__":
 
     # save the combined_metadata to a csv
     combined_metadata.to_csv(
-        os.path.join(save_path, "new_plasma_cell_deepheme_training_metadata.csv"), index=False
+        os.path.join(save_path, "new_plasma_cell_deepheme_training_metadata.csv"),
+        index=False,
     )
