@@ -52,7 +52,7 @@ def create_plasma_cell_dataset_metadata(base_data_csv, plasma_cell_data_dir):
     def get_mapped_label(cell_type):
         for group, cell_types in differential_group_dict.items():
             if cell_type in cell_types:
-                return cell_type
+                return group
         return "skippocytes"
 
     base_metadata["grouped_label"] = base_metadata["original_path"].apply(
