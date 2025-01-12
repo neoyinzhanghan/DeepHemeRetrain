@@ -35,10 +35,15 @@ def create_plasma_cell_dataset_metadata(base_data_csv, plasma_cell_data_dir):
 
     # recursively find all the jpg files in the plasma_cell_data_dir
     print("Finding plasma cell images...")
+    # First compute total number of directories for progress bar
+    total = 0
+    for root, dirs, files in os.walk(plasma_cell_data_dir):
+        total += 1
+        
     for root, dirs, files in tqdm(
         os.walk(plasma_cell_data_dir),
         desc="Finding plasma cell images",
-        total=len(os.walk(plasma_cell_data_dir)),
+        total=total,
     ):
         for file in files:
             if file.endswith(".jpg"):
