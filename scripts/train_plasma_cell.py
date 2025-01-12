@@ -27,7 +27,7 @@ num_workers = 64
 downsample_factor = 1
 batch_size = 256
 img_size = 96
-num_classes = 23
+num_classes = 10
 
 results_dirs_list = [
     "/media/hdd3/neo/AML_bma",
