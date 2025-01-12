@@ -257,7 +257,7 @@ class CustomPlasmaCellDataset(Dataset):
 
 if __name__ == "__main__":
     base_data_csv = "/media/hdd3/neo/pooled_deepheme_data/metadata.csv"
-    plasma_cell_data_dir = "/media/ssd2/dh_labelled_data/DeepHeme1/UCSF_repo/ER2"
+    plasma_cell_data_dir = "/media/hdd3/neo/PCM_cells_annotated"
     save_path = "/media/hdd3/neo"
 
     combined_metadata = create_plasma_cell_dataset_metadata(
