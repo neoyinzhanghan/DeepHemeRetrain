@@ -1,6 +1,7 @@
 import os
 import random
 import pandas as pd
+from pathlib import Path
 import numpy as np
 from torch.utils.data import Dataset
 from torchvision.datasets import ImageFolder
@@ -312,13 +313,9 @@ class CustomPlasmaCellDataset(Dataset):
 
 
 if __name__ == "__main__":
-    base_data_csv = "/media/hdd3/neo/pooled_deepheme_data/new_metadata.csv"
+    base_data_csv = "/home/greg/Documents/neo/DeepHemeRetrain/scripts/new_metadata.csv"
     plasma_cell_data_dir = "/media/hdd3/neo/PCM_cells_annotated"
     save_path = "/media/hdd3/neo"
-
-    import os
-    import pandas as pd
-    from pathlib import Path
 
     def create_metadata_csv(root_dir):
         # Lists to store metadata
