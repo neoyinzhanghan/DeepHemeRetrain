@@ -45,7 +45,7 @@ def create_plasma_cell_dataset_metadata(base_data_csv, plasma_cell_data_dir):
         desc="Finding plasma cell images",
         total=total,
     ):
-        for file in files:
+        for file in tqdm(files, desc="Processing files in directory", total=len(files)):
             if file.endswith(".jpg"):
                 plasma_cell_jpgs.append(os.path.join(root, file))
                 plasma_cell_labels.append("L4")
