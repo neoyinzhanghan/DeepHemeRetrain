@@ -355,12 +355,12 @@ if __name__ == "__main__":
     root_dir = "/media/hdd3/neo/pooled_deepheme_data"
     create_metadata_csv(root_dir)
 
-    # combined_metadata = create_plasma_cell_dataset_metadata(
-    #     base_data_csv, plasma_cell_data_dir
-    # )
+    combined_metadata = create_plasma_cell_dataset_metadata(
+        base_data_csv, plasma_cell_data_dir
+    )
 
-    # # save the combined_metadata to a csv
-    # combined_metadata.to_csv(
-    #     os.path.join(save_path, "new_plasma_cell_deepheme_training_metadata.csv"),
-    #     index=False,
-    # )
+    # save the combined_metadata to a csv
+    combined_metadata.to_csv(
+        os.path.join(save_path, "new_plasma_cell_deepheme_training_metadata.csv"),
+        index=False,
+    )
