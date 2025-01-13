@@ -158,7 +158,6 @@ class ImageDataModule(pl.LightningDataModule):
             num_workers=24,
         )
 
-
 # Model Module
 class Myresnext50(pl.LightningModule):
     def __init__(self, num_classes=23, config=default_config):
@@ -183,15 +182,18 @@ class Myresnext50(pl.LightningModule):
         self.test_accuracy = Accuracy(num_classes=num_classes, task=task)
         self.test_auroc = AUROC(num_classes=num_classes, task=task)
 
-        # Per-class accuracy metrics
+        # Per-class accuracy metrics using multiclass task
         self.train_class_accuracies = {
-            name: Accuracy(task="binary") for name in grouped_label_to_index.keys()
+            name: Accuracy(task="multiclass", num_classes=num_classes) 
+            for name in grouped_label_to_index.keys()
         }
         self.val_class_accuracies = {
-            name: Accuracy(task="binary") for name in grouped_label_to_index.keys()
+            name: Accuracy(task="multiclass", num_classes=num_classes)
+            for name in grouped_label_to_index.keys()
         }
         self.test_class_accuracies = {
-            name: Accuracy(task="binary") for name in grouped_label_to_index.keys()
+            name: Accuracy(task="multiclass", num_classes=num_classes)
+            for name in grouped_label_to_index.keys()
         }
 
         self.config = config
@@ -223,9 +225,7 @@ class Myresnext50(pl.LightningModule):
         for class_name, class_idx in grouped_label_to_index.items():
             class_mask = y == class_idx
             if class_mask.sum() > 0:  # Only compute if we have samples of this class
-                self.train_class_accuracies[class_name](
-                    preds[class_mask], y[class_mask]
-                )
+                self.train_class_accuracies[class_name](y_hat[class_mask], y[class_mask])
                 self.log(
                     f"train_acc_{class_name}",
                     self.train_class_accuracies[class_name],
@@ -253,7 +253,7 @@ class Myresnext50(pl.LightningModule):
         for class_name, class_idx in grouped_label_to_index.items():
             class_mask = y == class_idx
             if class_mask.sum() > 0:
-                self.val_class_accuracies[class_name](preds[class_mask], y[class_mask])
+                self.val_class_accuracies[class_name](y_hat[class_mask], y[class_mask])
                 self.log(
                     f"val_acc_{class_name}",
                     self.val_class_accuracies[class_name],
@@ -282,7 +282,7 @@ class Myresnext50(pl.LightningModule):
         for class_name, class_idx in grouped_label_to_index.items():
             class_mask = y == class_idx
             if class_mask.sum() > 0:
-                self.test_class_accuracies[class_name](preds[class_mask], y[class_mask])
+                self.test_class_accuracies[class_name](y_hat[class_mask], y[class_mask])
                 self.log(
                     f"test_acc_{class_name}",
                     self.test_class_accuracies[class_name],
