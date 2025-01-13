@@ -173,20 +173,13 @@ grouped_label_to_index = {
     "skippocytes": 10,
 }
 
+
 # Model Module
 class Myresnext50(pl.LightningModule):
-    def __init__(self, num_classes=23, config=default_config):
+    def __init__(self, num_classes=11, config=default_config):
         super(Myresnext50, self).__init__()
         self.pretrained = models.resnext50_32x4d(pretrained=True)
         self.pretrained.fc = nn.Linear(self.pretrained.fc.in_features, num_classes)
-        # self.my_new_layers = nn.Sequential(
-        #     nn.Linear(
-        #         1000, 100
-        #     ),  # Assuming the output of your pre-trained model is 1000
-        #     nn.ReLU(),
-        #     nn.Linear(100, num_classes),
-        # )
-        # self.num_classes = num_classes
 
         task = "multiclass"
 
@@ -206,9 +199,21 @@ class Myresnext50(pl.LightningModule):
         self.val_class_accuracies = {}
         self.test_class_accuracies = {}
         for name in grouped_label_to_index.keys():
-            setattr(self, f"train_acc_{name}", Accuracy(task=task, num_classes=num_classes).to(self.device))
-            setattr(self, f"val_acc_{name}", Accuracy(task=task, num_classes=num_classes).to(self.device))
-            setattr(self, f"test_acc_{name}", Accuracy(task=task, num_classes=num_classes).to(self.device))
+            setattr(
+                self,
+                f"train_acc_{name}",
+                Accuracy(task=task, num_classes=num_classes).to(self.device),
+            )
+            setattr(
+                self,
+                f"val_acc_{name}",
+                Accuracy(task=task, num_classes=num_classes).to(self.device),
+            )
+            setattr(
+                self,
+                f"test_acc_{name}",
+                Accuracy(task=task, num_classes=num_classes).to(self.device),
+            )
 
         self.config = config
 
@@ -248,7 +253,7 @@ class Myresnext50(pl.LightningModule):
                     metric,
                     on_step=False,
                     on_epoch=True,
-                    metric_attribute=f"train_acc_{class_name}"
+                    metric_attribute=f"train_acc_{class_name}",
                 )
 
         return loss
@@ -280,7 +285,7 @@ class Myresnext50(pl.LightningModule):
                     metric,
                     on_step=False,
                     on_epoch=True,
-                    metric_attribute=f"val_acc_{class_name}"
+                    metric_attribute=f"val_acc_{class_name}",
                 )
 
         return loss
@@ -313,7 +318,7 @@ class Myresnext50(pl.LightningModule):
                     metric,
                     on_step=False,
                     on_epoch=True,
-                    metric_attribute=f"test_acc_{class_name}"
+                    metric_attribute=f"test_acc_{class_name}",
                 )
 
         return loss
@@ -356,7 +361,7 @@ def train_model(
     trainer.test(model, data_module.test_dataloader())
 
 
-def model_create(path, num_classes=23):
+def model_create(path, num_classes=11):
     """
     Create a model instance from a given checkpoint.
 

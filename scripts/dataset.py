@@ -37,6 +37,9 @@ grouped_label_to_index = {
     "skippocytes": 10,
 }
 
+# grouped_labels
+grouped_labels = list(grouped_label_to_index.keys())
+
 
 def create_plasma_cell_dataset_metadata(base_data_csv, plasma_cell_data_dir):
     """The base_metadata_csv should have columns idx,original_path,split
@@ -308,7 +311,7 @@ class CustomPlasmaCellDataset(Dataset):
             image = self.transform(image)
         # Get label
         grouped_label = cell_metadata["grouped_label"]
-        label_idx = grouped_label_to_index[grouped_label]   
+        label_idx = grouped_label_to_index[grouped_label]
 
         return image, label_idx
 
