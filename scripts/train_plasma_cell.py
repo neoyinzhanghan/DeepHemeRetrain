@@ -19,7 +19,7 @@ from dataset import CustomPlasmaCellDataset
 ####### DEFINE HYPERPARAMETERS AND DATA DIRECTORIES ########################
 ############################################################################
 
-num_epochs = 500
+num_epochs = 50
 default_config = {"lr": 3.56e-05}  # 1.462801279401232e-06}
 base_data_dir = "/media/hdd3/neo/pooled_deepheme_data"
 num_gpus = 2
