@@ -13,7 +13,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torchvision import transforms, datasets, models
 from torchmetrics import Accuracy, AUROC
 from torch.utils.data import WeightedRandomSampler
-from dataset import CustomPlasmaCellDataset
+from dataset import CustomPlasmaCellDataset, grouped_label_to_index
 
 ############################################################################
 ####### DEFINE HYPERPARAMETERS AND DATA DIRECTORIES ########################
@@ -183,11 +183,21 @@ class Myresnext50(pl.LightningModule):
         self.test_accuracy = Accuracy(num_classes=num_classes, task=task)
         self.test_auroc = AUROC(num_classes=num_classes, task=task)
 
+        # Per-class accuracy metrics
+        self.train_class_accuracies = {
+            name: Accuracy(task="binary") for name in grouped_label_to_index.keys()
+        }
+        self.val_class_accuracies = {
+            name: Accuracy(task="binary") for name in grouped_label_to_index.keys()
+        }
+        self.test_class_accuracies = {
+            name: Accuracy(task="binary") for name in grouped_label_to_index.keys()
+        }
+
         self.config = config
 
     def forward(self, x):
         x = self.pretrained(x)
-
         return x
 
     def extract_features(self, x):
@@ -207,6 +217,22 @@ class Myresnext50(pl.LightningModule):
         self.train_auroc(y_hat, y)
         self.log("train_acc", self.train_accuracy, on_step=True, on_epoch=True)
         self.log("train_auroc", self.train_auroc, on_step=True, on_epoch=True)
+
+        # Per-class accuracy logging
+        preds = torch.argmax(y_hat, dim=1)
+        for class_name, class_idx in grouped_label_to_index.items():
+            class_mask = y == class_idx
+            if class_mask.sum() > 0:  # Only compute if we have samples of this class
+                self.train_class_accuracies[class_name](
+                    preds[class_mask], y[class_mask]
+                )
+                self.log(
+                    f"train_acc_{class_name}",
+                    self.train_class_accuracies[class_name],
+                    on_step=False,
+                    on_epoch=True,
+                )
+
         return loss
 
     def configure_optimizers(self):
@@ -221,6 +247,20 @@ class Myresnext50(pl.LightningModule):
         self.log("val_loss", loss, on_step=False, on_epoch=True)
         self.val_accuracy(y_hat, y)
         self.val_auroc(y_hat, y)
+
+        # Per-class accuracy logging
+        preds = torch.argmax(y_hat, dim=1)
+        for class_name, class_idx in grouped_label_to_index.items():
+            class_mask = y == class_idx
+            if class_mask.sum() > 0:
+                self.val_class_accuracies[class_name](preds[class_mask], y[class_mask])
+                self.log(
+                    f"val_acc_{class_name}",
+                    self.val_class_accuracies[class_name],
+                    on_step=False,
+                    on_epoch=True,
+                )
+
         return loss
 
     def on_validation_epoch_end(self):
@@ -236,6 +276,20 @@ class Myresnext50(pl.LightningModule):
         self.log("test_loss", loss, on_step=False, on_epoch=True)
         self.test_accuracy(y_hat, y)
         self.test_auroc(y_hat, y)
+
+        # Per-class accuracy logging
+        preds = torch.argmax(y_hat, dim=1)
+        for class_name, class_idx in grouped_label_to_index.items():
+            class_mask = y == class_idx
+            if class_mask.sum() > 0:
+                self.test_class_accuracies[class_name](preds[class_mask], y[class_mask])
+                self.log(
+                    f"test_acc_{class_name}",
+                    self.test_class_accuracies[class_name],
+                    on_step=False,
+                    on_epoch=True,
+                )
+
         return loss
 
     def on_test_epoch_end(self):
