@@ -175,24 +175,24 @@ class Myresnext50(pl.LightningModule):
 
         task = "multiclass"
 
-        self.train_accuracy = Accuracy(task=task, num_classes=num_classes)
-        self.val_accuracy = Accuracy(task=task, num_classes=num_classes)
-        self.train_auroc = AUROC(num_classes=num_classes, task=task)
-        self.val_auroc = AUROC(num_classes=num_classes, task=task)
-        self.test_accuracy = Accuracy(num_classes=num_classes, task=task)
-        self.test_auroc = AUROC(num_classes=num_classes, task=task)
+        self.train_accuracy = Accuracy(task=task, num_classes=num_classes).to(self.device)
+        self.val_accuracy = Accuracy(task=task, num_classes=num_classes).to(self.device)
+        self.train_auroc = AUROC(num_classes=num_classes, task=task).to(self.device)
+        self.val_auroc = AUROC(num_classes=num_classes, task=task).to(self.device)
+        self.test_accuracy = Accuracy(num_classes=num_classes, task=task).to(self.device)
+        self.test_auroc = AUROC(num_classes=num_classes, task=task).to(self.device)
 
         # Per-class accuracy metrics using multiclass task
         self.train_class_accuracies = {
-            name: Accuracy(task="multiclass", num_classes=num_classes) 
+            name: Accuracy(task="multiclass", num_classes=num_classes).to(self.device)
             for name in grouped_label_to_index.keys()
         }
         self.val_class_accuracies = {
-            name: Accuracy(task="multiclass", num_classes=num_classes)
+            name: Accuracy(task="multiclass", num_classes=num_classes).to(self.device)
             for name in grouped_label_to_index.keys()
         }
         self.test_class_accuracies = {
-            name: Accuracy(task="multiclass", num_classes=num_classes)
+            name: Accuracy(task="multiclass", num_classes=num_classes).to(self.device)
             for name in grouped_label_to_index.keys()
         }
 
