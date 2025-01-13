@@ -262,15 +262,9 @@ class Myresnext50(pl.LightningModule):
             if class_mask.sum() > 0:
                 y_hat_class = y_hat[class_mask].to(self.device)
                 y_class = y[class_mask].to(self.device)
-
-                # print the device of y_hat_class and y_class
-                print(f"y_hat_class device: {y_hat_class.device}")
-                print(f"y_class device: {y_class.device}")
-                # print the device of the val_class_accuracies
-                print(
-                    f"val_class_accuracies device: {self.val_class_accuracies[class_name].device}"
+                val_class_accuracies = self.val_class_accuracies[class_name].to(
+                    self.device
                 )
-
                 self.val_class_accuracies[class_name](y_hat_class, y_class)
                 self.log(
                     f"val_acc_{class_name}",
