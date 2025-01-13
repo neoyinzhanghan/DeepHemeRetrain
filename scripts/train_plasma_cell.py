@@ -159,6 +159,20 @@ class ImageDataModule(pl.LightningDataModule):
         )
 
 
+grouped_label_to_index = {
+    "blasts and blast-equivalents": 0,
+    "promyelocytes": 1,
+    "myelocytes": 2,
+    "metamyelocytes": 3,
+    "neutrophils/bands": 4,
+    "monocytes": 5,
+    "eosinophils": 6,
+    "erythroid precursors": 7,
+    "lymphocytes": 8,
+    "plasma cells": 9,
+    "skippocytes": 10,
+}
+
 # Model Module
 class Myresnext50(pl.LightningModule):
     def __init__(self, num_classes=23, config=default_config):
@@ -188,18 +202,13 @@ class Myresnext50(pl.LightningModule):
         self.test_auroc = AUROC(num_classes=num_classes, task=task).to(self.device)
 
         # Per-class accuracy metrics using multiclass task
-        self.train_class_accuracies = {
-            name: Accuracy(task=task, num_classes=num_classes).to(self.device)
-            for name in grouped_label_to_index.keys()
-        }
-        self.val_class_accuracies = {
-            name: Accuracy(task=task, num_classes=num_classes).to(self.device)
-            for name in grouped_label_to_index.keys()
-        }
-        self.test_class_accuracies = {
-            name: Accuracy(task=task, num_classes=num_classes).to(self.device)
-            for name in grouped_label_to_index.keys()
-        }
+        self.train_class_accuracies = {}
+        self.val_class_accuracies = {}
+        self.test_class_accuracies = {}
+        for name in grouped_label_to_index.keys():
+            setattr(self, f"train_acc_{name}", Accuracy(task=task, num_classes=num_classes).to(self.device))
+            setattr(self, f"val_acc_{name}", Accuracy(task=task, num_classes=num_classes).to(self.device))
+            setattr(self, f"test_acc_{name}", Accuracy(task=task, num_classes=num_classes).to(self.device))
 
         self.config = config
 
@@ -232,12 +241,14 @@ class Myresnext50(pl.LightningModule):
             if class_mask.sum() > 0:  # Only compute if we have samples of this class
                 y_hat_class = y_hat[class_mask].to(self.device)
                 y_class = y[class_mask].to(self.device)
-                self.train_class_accuracies[class_name](y_hat_class, y_class)
+                metric = getattr(self, f"train_acc_{class_name}")
+                metric(y_hat_class, y_class)
                 self.log(
                     f"train_acc_{class_name}",
-                    self.train_class_accuracies[class_name],
+                    metric,
                     on_step=False,
                     on_epoch=True,
+                    metric_attribute=f"train_acc_{class_name}"
                 )
 
         return loss
@@ -262,15 +273,14 @@ class Myresnext50(pl.LightningModule):
             if class_mask.sum() > 0:
                 y_hat_class = y_hat[class_mask].to(self.device)
                 y_class = y[class_mask].to(self.device)
-                val_class_accuracies = self.val_class_accuracies[class_name].to(
-                    self.device
-                )
-                self.val_class_accuracies[class_name](y_hat_class, y_class)
+                metric = getattr(self, f"val_acc_{class_name}")
+                metric(y_hat_class, y_class)
                 self.log(
                     f"val_acc_{class_name}",
-                    self.val_class_accuracies[class_name],
+                    metric,
                     on_step=False,
                     on_epoch=True,
+                    metric_attribute=f"val_acc_{class_name}"
                 )
 
         return loss
@@ -296,12 +306,14 @@ class Myresnext50(pl.LightningModule):
             if class_mask.sum() > 0:
                 y_hat_class = y_hat[class_mask].to(self.device)
                 y_class = y[class_mask].to(self.device)
-                self.test_class_accuracies[class_name](y_hat_class, y_class)
+                metric = getattr(self, f"test_acc_{class_name}")
+                metric(y_hat_class, y_class)
                 self.log(
                     f"test_acc_{class_name}",
-                    self.test_class_accuracies[class_name],
+                    metric,
                     on_step=False,
                     on_epoch=True,
+                    metric_attribute=f"test_acc_{class_name}"
                 )
 
         return loss
